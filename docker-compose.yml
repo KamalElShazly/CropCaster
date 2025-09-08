@@ -1,0 +1,12 @@
+services:
+  cropcaster:
+    image: cropcaster:latest
+    container_name: cropcaster
+    ports:
+      - "5678:5678"
+    env_file:
+      - .env
+    volumes:
+      - ~/.n8n:/home/node/.n8n
+      - ./scripts:/scripts
+    restart: unless-stopped

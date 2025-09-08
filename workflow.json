@@ -1,0 +1,499 @@
+{
+  "name": "Crop Caster",
+  "nodes": [
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=python3 /scripts/get_transcript.py {{ $json.videoId }}"
+      },
+      "name": "Get Transcript",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -80
+      ],
+      "id": "e589a4e2-bd26-4ef9-9249-2c040eef4474"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 15,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "feedUrl": "https://www.youtube.com/feeds/videos.xml?channel_id= UCZHHlx_dBZIl-R7ZE2WxFWw"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -80
+      ],
+      "id": "06cf0358-9e54-4d58-a96f-4c19e3e70049",
+      "name": "RSS Feed Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an assistant that extracts crop prices from Arabic text.\nOnly extract prices for the following crops:\n- شعير عريض → \"broad_barely_rice\"\n- شعير رفيع → \"small_barely_rice\"\n- أرز أبيض عريض → broad_white_rice\n- أرز أبيض رفيع → small_white_rice\n\nRead the transcript and output a JSON array where each object has:\n\n- \"date\": the date\n- \"type\": the crop type (e.g., \"broad_barely_rice\", \"small_barely_rice\")\n- \"min_price\": minimum price\n- \"max_price\": maximum price\n\nOnly return valid JSON, no extra text.\n\nTranscript:\n{{$json[\"stdout\"]}}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        800,
+        -80
+      ],
+      "id": "24a472a2-8491-4573-ac30-51760a95ac88",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        800,
+        160
+      ],
+      "id": "27f32a4b-fa94-44a0-b07b-d1162e0e69b2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dGOIqfxDu6dGd3Po",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the raw text from Gemini node\nlet raw = $json[\"text\"];\n\n// Remove ```json and ``` if present\nraw = raw.replace(/^```json\\s*/, \"\").replace(/```$/, \"\").trim();\n\n// Parse the cleaned JSON string\nconst data = JSON.parse(raw);\n\n// Return as n8n items\nreturn [{ data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        -80
+      ],
+      "id": "c9eb6fd8-34fa-4838-9935-68a04c8f668d",
+      "name": "Map Gemini output to JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten the array and map to MongoDB fields\nreturn $input.last().json.data.map(item => ({\n  json: {\n    video_extracted_date: item.date,\n    video_published_date: $input.first().json.videoPublishedDate,\n    video_processed_date: $input.first().json.videoProcessedDate,\n    source_id: $input.first().json.sourceId,\n    crop_category_id: $input.first().json.cropCategoryId,\n    crop_type_id: item.type,\n    min_price: item.min_price,\n    max_price: item.max_price,\n    avg_price: (item.min_price + item.max_price) / 2\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        -80
+      ],
+      "id": "a6144593-29d5-49dd-9d97-6a0d58f0765e",
+      "name": "Flatten the array of crop prices"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1328,
+        -272
+      ],
+      "id": "21e806d7-b205-4957-91b2-98e26c1b9ca0",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "collection": "processed_sources",
+        "options": {},
+        "query": "={\n  \"source_id\": \"{{ $json.sourceId }}\",\n  \"video_id\": \"{{ $json.videoId }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -80
+      ],
+      "id": "729d63ce-1198-4b49-a28a-cdd5d8634bbd",
+      "name": "Find documents",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "Yci6bPuzPHrr4vKy",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const sourceId = \"reda_meshref_youtube\";\nconst cropCategoryId = \"rice\";\n\n$json.videoId = $json.link.split(\"v=\")[1];\n$json.sourceId = sourceId;\n$json.cropCategoryId = cropCategoryId;\n$json.videoPublishedDate = $json.pubDate;\n$json.videoProcessedDate = new Date().toISOString();\nreturn [{ json: $json }];\n"
+      },
+      "name": "Adjust source data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -80
+      ],
+      "id": "52254528-7db6-4f66-b53c-e92bcbbfcc3b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8278becc-21a3-4bef-a9ae-a7f9111e4385",
+              "leftValue": "={{ $json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        -80
+      ],
+      "id": "9259b8be-40e2-476e-b659-5aa9e5c209de",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        -288
+      ],
+      "id": "d0e12075-a012-42c6-a8f2-ae3f62b736d7",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "prices",
+        "fields": "video_extracted_date,video_published_date,video_processed_date,source_id,crop_category_id,crop_type_id,min_price,max_price,avg_price",
+        "options": {
+          "dateFields": "video_published_date,video_processed_date"
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        -80
+      ],
+      "id": "04439add-b673-40d6-801f-4b75013c3c5d",
+      "name": "Insert prices",
+      "credentials": {
+        "mongoDb": {
+          "id": "Yci6bPuzPHrr4vKy",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "processed_sources",
+        "fields": "source_id,video_id,video_published_date,video_processed_date",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        2624,
+        -432
+      ],
+      "id": "cae3911a-ed8d-4fb9-ac41-934d7798649e",
+      "name": "Insert processed source",
+      "credentials": {
+        "mongoDb": {
+          "id": "Yci6bPuzPHrr4vKy",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2160,
+        -432
+      ],
+      "id": "2efd984e-5d36-4ed7-b10c-977f7c3bb0a1",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c4589727-5898-4ce4-974f-8fdfaa06c8ea",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        -80
+      ],
+      "id": "9dffdffc-e99f-415f-a5ae-55023d3fbc93",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  source_id: $input.first().json.sourceId,\n  video_id: $input.first().json.videoId,\n  video_published_date: $input.first().json.videoPublishedDate,\n  video_processed_date: $input.first().json.videoProcessedDate\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        -432
+      ],
+      "id": "9c677cf0-33e3-4185-b68c-7c624622ce6a",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Transcript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Feed Trigger": {
+      "main": [
+        [
+          {
+            "node": "Adjust source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Map Gemini output to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Gemini output to JSON": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Flatten the array of crop prices": {
+      "main": [
+        [
+          {
+            "node": "Insert prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Flatten the array of crop prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adjust source data": {
+      "main": [
+        [
+          {
+            "node": "Find documents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Get Transcript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert prices": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert processed source": {
+      "main": [
+        []
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Insert processed source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "878d9bce-83b6-419e-b6bf-b65ac2242162",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb9f9ae3e91448d1a3b75aef086b18c47d251325e66bcceb4d81abff75e09b7b"
+  },
+  "id": "YQIx1IX1ILImkyep",
+  "tags": []
+}
