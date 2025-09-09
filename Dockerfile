@@ -22,8 +22,11 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Back to node user for running n8n
 USER node
 
+# Set working directory
+WORKDIR /home/node
+
 # Expose n8n's default port
 EXPOSE 5678
 
-# Start n8n
-CMD ["n8n", "start"]
+# Use the full path to n8n and ensure it's executable
+CMD ["/usr/local/bin/n8n", "start"]
