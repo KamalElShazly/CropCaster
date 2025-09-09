@@ -19,8 +19,8 @@ RUN /opt/venv/bin/pip install --no-cache-dir --upgrade youtube-transcript-api
 # Add the virtual environment to the PATH so n8n can find it
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Back to node user for running n8n
-USER node
+# Switch back to root to avoid Railway permission issues
+USER root
 
 # Expose n8n's default port
 EXPOSE 5678
