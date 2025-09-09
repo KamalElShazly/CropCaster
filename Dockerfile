@@ -17,7 +17,7 @@ RUN /opt/venv/bin/pip install --no-cache-dir --upgrade pip
 RUN /opt/venv/bin/pip install --no-cache-dir --upgrade youtube-transcript-api
 
 # Add the virtual environment to the PATH so n8n can find it
-ENV PATH="/opt/venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:/usr/local/bin:$PATH"
 
 # Back to node user for running n8n
 USER node
@@ -28,5 +28,5 @@ WORKDIR /home/node
 # Expose n8n's default port
 EXPOSE 5678
 
-# Use the direct path to the actual n8n binary (not the symlink)
-CMD ["node", "/usr/local/lib/node_modules/n8n/bin/n8n", "start"]
+# Use n8n command with full PATH
+CMD ["n8n", "start"]
