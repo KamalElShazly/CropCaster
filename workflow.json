@@ -10,46 +10,24 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        544,
-        -80
+        -3056,
+        640
       ],
-      "id": "e589a4e2-bd26-4ef9-9249-2c040eef4474"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyX",
-              "value": 15,
-              "unit": "minutes"
-            }
-          ]
-        },
-        "feedUrl": "https://www.youtube.com/feeds/videos.xml?channel_id= UCZHHlx_dBZIl-R7ZE2WxFWw"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -352,
-        -80
-      ],
-      "id": "06cf0358-9e54-4d58-a96f-4c19e3e70049",
-      "name": "RSS Feed Trigger"
+      "id": "57d232ca-66b0-464b-a038-443289baead3"
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are an assistant that extracts crop prices from Arabic text.\nOnly extract prices for the following crops:\n- شعير عريض → \"broad_barely_rice\"\n- شعير رفيع → \"small_barely_rice\"\n- أرز أبيض عريض → broad_white_rice\n- أرز أبيض رفيع → small_white_rice\n\nRead the transcript and output a JSON array where each object has:\n\n- \"date\": the date\n- \"type\": the crop type (e.g., \"broad_barely_rice\", \"small_barely_rice\")\n- \"min_price\": minimum price\n- \"max_price\": maximum price\n\nOnly return valid JSON, no extra text.\n\nTranscript:\n{{$json[\"stdout\"]}}",
+        "text": "=You are an assistant that extracts crop prices from Arabic text.\nOnly extract prices for the following crops:\n- شعير عريض → \"broad_barely_rice\"\n- شعير رفيع → \"small_barely_rice\"\n- أرز أبيض عريض → broad_white_rice\n- أرز أبيض رفيع → small_white_rice\n\nRead the transcript and output a JSON array where each object has:\nRead the transcript and output a JSON object with:\n- \"confidence\": confidence score (0-100) - how sure you are this contains real price data\n- \"has_prices\": boolean - whether actual prices were found\n- \"data\": array of price objects (only if has_prices is true)\n\n- \"date\": the date\n- \"type\": the crop type (e.g., \"broad_barely_rice\", \"small_barely_rice\")\n- \"min_price\": minimum price\n- \"max_price\": maximum price\n\nOnly return valid JSON, no extra text.\n\nTranscript:\n{{ $json.stdout }}",
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        800,
-        -80
+        -2832,
+        640
       ],
-      "id": "24a472a2-8491-4573-ac30-51760a95ac88",
+      "id": "954ce53c-efd1-483d-a735-09500539e7d8",
       "name": "Basic LLM Chain"
     },
     {
@@ -59,136 +37,30 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        800,
-        160
+        -2832,
+        880
       ],
-      "id": "27f32a4b-fa94-44a0-b07b-d1162e0e69b2",
+      "id": "d148a8f4-cca0-44d0-94b1-d7eeef962d43",
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "dGOIqfxDu6dGd3Po",
+          "id": "rana6vsIO5TQ1Eyj",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Get the raw text from Gemini node\nlet raw = $json[\"text\"];\n\n// Remove ```json and ``` if present\nraw = raw.replace(/^```json\\s*/, \"\").replace(/```$/, \"\").trim();\n\n// Parse the cleaned JSON string\nconst data = JSON.parse(raw);\n\n// Return as n8n items\nreturn [{ data }];"
+        "jsCode": "// Get the text output from AI node\nconst raw = $input.first().json.text || \"\";\n\n// Remove ```json and ``` if they exist\nconst cleaned = raw.replace(/```json|```/g, \"\").trim();\n\nlet parsed = {};\ntry {\n  parsed = JSON.parse(cleaned) || {};\n} catch (e) {\n  parsed = { confidence: 0, has_prices: false, data: [] };\n}\n\n// Return the parsed object\nreturn { ...parsed };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1136,
-        -80
+        -2496,
+        640
       ],
-      "id": "c9eb6fd8-34fa-4838-9935-68a04c8f668d",
+      "id": "b96eabbc-2f1b-4481-8ae2-bc390d1aead6",
       "name": "Map Gemini output to JSON"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Flatten the array and map to MongoDB fields\nreturn $input.last().json.data.map(item => ({\n  json: {\n    video_extracted_date: item.date,\n    video_published_date: $input.first().json.videoPublishedDate,\n    video_processed_date: $input.first().json.videoProcessedDate,\n    source_id: $input.first().json.sourceId,\n    crop_category_id: $input.first().json.cropCategoryId,\n    crop_type_id: item.type,\n    min_price: item.min_price,\n    max_price: item.max_price,\n    avg_price: (item.min_price + item.max_price) / 2\n  }\n}));"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1504,
-        -80
-      ],
-      "id": "a6144593-29d5-49dd-9d97-6a0d58f0765e",
-      "name": "Flatten the array of crop prices"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        1328,
-        -272
-      ],
-      "id": "21e806d7-b205-4957-91b2-98e26c1b9ca0",
-      "name": "Merge"
-    },
-    {
-      "parameters": {
-        "collection": "processed_sources",
-        "options": {},
-        "query": "={\n  \"source_id\": \"{{ $json.sourceId }}\",\n  \"video_id\": \"{{ $json.videoId }}\"\n}"
-      },
-      "type": "n8n-nodes-base.mongoDb",
-      "typeVersion": 1.2,
-      "position": [
-        32,
-        -80
-      ],
-      "id": "729d63ce-1198-4b49-a28a-cdd5d8634bbd",
-      "name": "Find documents",
-      "alwaysOutputData": true,
-      "credentials": {
-        "mongoDb": {
-          "id": "Yci6bPuzPHrr4vKy",
-          "name": "MongoDB account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "functionCode": "const sourceId = \"reda_meshref_youtube\";\nconst cropCategoryId = \"rice\";\n\n$json.videoId = $json.link.split(\"v=\")[1];\n$json.sourceId = sourceId;\n$json.cropCategoryId = cropCategoryId;\n$json.videoPublishedDate = $json.pubDate;\n$json.videoProcessedDate = new Date().toISOString();\nreturn [{ json: $json }];\n"
-      },
-      "name": "Adjust source data",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        -160,
-        -80
-      ],
-      "id": "52254528-7db6-4f66-b53c-e92bcbbfcc3b"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "8278becc-21a3-4bef-a9ae-a7f9111e4385",
-              "leftValue": "={{ $json }}",
-              "rightValue": 0,
-              "operator": {
-                "type": "object",
-                "operation": "empty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        240,
-        -80
-      ],
-      "id": "9259b8be-40e2-476e-b659-5aa9e5c209de",
-      "name": "If"
-    },
-    {
-      "parameters": {
-        "mode": "chooseBranch"
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        400,
-        -288
-      ],
-      "id": "d0e12075-a012-42c6-a8f2-ae3f62b736d7",
-      "name": "Merge1"
     },
     {
       "parameters": {
@@ -202,14 +74,14 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.2,
       "position": [
-        1760,
-        -80
+        -1728,
+        560
       ],
-      "id": "04439add-b673-40d6-801f-4b75013c3c5d",
+      "id": "80e85964-884f-4155-b234-3ba8db51f8a7",
       "name": "Insert prices",
       "credentials": {
         "mongoDb": {
-          "id": "Yci6bPuzPHrr4vKy",
+          "id": "OzOUtOkjmZXG1V30",
           "name": "MongoDB account"
         }
       }
@@ -224,30 +96,30 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.2,
       "position": [
-        2624,
-        -432
+        -1728,
+        736
       ],
-      "id": "cae3911a-ed8d-4fb9-ac41-934d7798649e",
+      "id": "5a4c0497-c632-4157-a2a4-828bd13334e1",
       "name": "Insert processed source",
       "credentials": {
         "mongoDb": {
-          "id": "Yci6bPuzPHrr4vKy",
+          "id": "OzOUtOkjmZXG1V30",
           "name": "MongoDB account"
         }
       }
     },
     {
       "parameters": {
-        "mode": "chooseBranch"
+        "jsCode": "const data = $(\"Source Data\").first().json;\n// Content Relevance Filter with Arabic Text Normalization\nconst title = data.title || \"\";\nconst description = data.description || \"\";\n\n// Normalize Arabic text to handle different forms of the same letters\nfunction normalizeArabic(text) {\n  return text\n    .replace(/[أإآ]/g, \"ا\") // Normalize alef variations\n    .replace(/[ة]/g, \"ه\") // Normalize ta marbuta\n    .replace(/[ي]/g, \"ي\") // Normalize ya variations\n    .replace(/[ؤ]/g, \"و\") // Normalize waw with hamza\n    .replace(/[ئ]/g, \"ي\") // Normalize ya with hamza\n    .replace(/[ء]/g, \"\") // Remove hamza\n    .replace(/\\s+/g, \" \") // Normalize spaces\n    .trim()\n    .toLowerCase();\n}\n\n// Normalize the input text\nconst normalizedTitle = normalizeArabic(title);\nconst normalizedDescription = normalizeArabic(description);\n\n// Keywords that indicate rice/barley price content (normalized)\nconst relevantKeywords = [\n  \"اسعار\",\n  \"ارز\",\n  \"شعير\",\n  \"اسعار اليوم\",\n  \"اسعار الارز\",\n  \"اسعار الشعير\",\n  \"اسعار الارز اليوم\",\n  \"اسعار الشعير اليوم\",\n  \"سعر الارز\",\n  \"سعر الشعير\",\n  \"اسعار الحبوب\",\n  \"اسعار المحاصيل\",\n  \"اسعار الارز الابيض\",\n  \"اسعار الشعير العريض\",\n  \"اسعار الشعير الرفيع\",\n  \"اسعار الارز الابيض العريض\",\n  \"اسعار الارز الابيض الرفيع\",\n  \"اسعار الشعير العريض\",\n  \"اسعار الشعير الرفيع\",\n  \"اسعار اليوم\",\n  \"اسعار السوق\",\n  \"اسعار الحبوب اليوم\",\n];\n\n// Get matched keywords in single pass\nconst matchedKeywords = relevantKeywords.filter(\n  (keyword) =>\n    normalizedTitle.includes(keyword) ||\n    normalizedDescription.includes(keyword),\n);\n\n// Calculate relevance score and determine if relevant\nconst relevanceScore = Math.min(100, matchedKeywords.length * 20);\nconst isRelevant = relevanceScore > 0;\n\n// Add relevance analysis as a structured object\ndata.relevance = {\n  isRelevant: isRelevant,\n  relevanceScore: relevanceScore,\n  matchedKeywords: matchedKeywords,\n  originalTitle: title,\n  originalDescription: description,\n  normalizedTitle: normalizedTitle,\n  normalizedDescription: normalizedDescription,\n  totalKeywordsChecked: relevantKeywords.length,\n  matchedKeywordsCount: matchedKeywords.length,\n};\n\nreturn data;\n"
       },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        2160,
-        -432
+        -3056,
+        384
       ],
-      "id": "2efd984e-5d36-4ed7-b10c-977f7c3bb0a1",
-      "name": "Merge2"
+      "id": "ffe3cdb0-8fcd-4bca-8e96-87abeb07e3cd",
+      "name": "Calculate Relevance"
     },
     {
       "parameters": {
@@ -260,12 +132,12 @@
           },
           "conditions": [
             {
-              "id": "c4589727-5898-4ce4-974f-8fdfaa06c8ea",
-              "leftValue": "={{ $json }}",
+              "id": "7d947ddb-ea5f-444f-b75c-f82bfd73f271",
+              "leftValue": "={{ $json.relevance.isRelevant }}",
               "rightValue": "",
               "operator": {
-                "type": "object",
-                "operation": "notEmpty",
+                "type": "boolean",
+                "operation": "true",
                 "singleValue": true
               }
             }
@@ -277,24 +149,314 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2000,
-        -80
+        -2848,
+        384
       ],
-      "id": "9dffdffc-e99f-415f-a5ae-55023d3fbc93",
-      "name": "If1"
+      "id": "afac95d4-9ec9-434e-84d7-99ac7bddcc62",
+      "name": "Check Relevance"
     },
     {
       "parameters": {
-        "jsCode": "return [{\n  source_id: $input.first().json.sourceId,\n  video_id: $input.first().json.videoId,\n  video_published_date: $input.first().json.videoPublishedDate,\n  video_processed_date: $input.first().json.videoProcessedDate\n}]"
+        "collection": "rejected_sources",
+        "options": {},
+        "query": "={\n  \"source_id\": \"{{ $json.sourceId }}\",\n  \"video_id\": \"{{ $json.videoId }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -2672,
+        16
+      ],
+      "id": "1fc36d43-18c1-4703-b41b-260e74f5a586",
+      "name": "Find source in rejected sources",
+      "credentials": {
+        "mongoDb": {
+          "id": "OzOUtOkjmZXG1V30",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "processed_sources",
+        "options": {},
+        "query": "={\n  \"source_id\": \"{{ $json.sourceId }}\",\n  \"video_id\": \"{{ $json.videoId }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -2672,
+        208
+      ],
+      "id": "ae81dc46-7605-44db-9765-42fa4bf5605c",
+      "name": "Find source in processed sources",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "OzOUtOkjmZXG1V30",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8278becc-21a3-4bef-a9ae-a7f9111e4385",
+              "leftValue": "={{ $json.isValid }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2000,
+        112
+      ],
+      "id": "9b032369-9330-40ab-9245-76ad8d6ce3a6",
+      "name": "Check source is valid"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process merged results from both MongoDB queries\nconst rejectedResults = $input.first().json; // Results from rejected_videos query\nconst processedResults = $input.last().json; // Results from processed_sources query\n\n// Check if video was found in either collection\nconst isRejected = rejectedResults && Object.keys(rejectedResults).length > 0;\nconst isProcessed = processedResults && Object.keys(processedResults).length > 0;\n\nreturn { isValid: !isRejected && !isProcessed };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2384,
-        -432
+        -2224,
+        112
       ],
-      "id": "9c677cf0-33e3-4185-b68c-7c624622ce6a",
-      "name": "Code"
+      "id": "ffd2de0b-b8f3-48f3-bf2e-d55f30b9e0cb",
+      "name": "Check source validity"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2432,
+        112
+      ],
+      "id": "eaada7e8-788a-498d-9c05-8ede58f91541",
+      "name": "Merge database results"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "rejected_sources",
+        "fields": "source_id,video_id,video_published_date,video_rejected_date",
+        "options": {
+          "dateFields": "video_published_date,video_rejected_date"
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -2096,
+        400
+      ],
+      "id": "66ed139f-87da-4ed6-863c-5bbf7ed2b0df",
+      "name": "Insert in rejected sources",
+      "credentials": {
+        "mongoDb": {
+          "id": "OzOUtOkjmZXG1V30",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f5cdfd21-db0f-4302-b0f0-cc9907fb8943",
+              "leftValue": "={{ $json.has_prices }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2288,
+        640
+      ],
+      "id": "9c49176b-683f-4bd8-a0d5-0463fa4b59cf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const sourceId = $(\"Loop Over Items\").first().json.source_id;\nconst cropCategoryId = \"rice\";\nconst url = $json.link;\nlet videoId = null;\n\nif (url.includes(\"watch?v=\")) {\n  // Normal YouTube video\n  videoId = url.split(\"v=\")[1].split(\"&\")[0];\n} else if (url.includes(\"shorts/\")) {\n  // YouTube Shorts\n  videoId = url.split(\"shorts/\")[1].split(\"?\")[0];\n}\n\n$json.videoId = videoId;\n$json.sourceId = sourceId;\n$json.cropCategoryId = cropCategoryId;\n$json.videoPublishedDate = $json.pubDate;\nreturn $json;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2912,
+        112
+      ],
+      "id": "97b4e082-97a9-48e8-a962-faa4993e4469",
+      "name": "Source Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten the array and map to MongoDB fields\nconst sourceData = $(\"Source Data\").first().json;\nconst aiData = $input.first().json;\n\nreturn aiData.data.map((item) => ({\n  json: {\n    video_extracted_date: item.date,\n    video_published_date: sourceData.videoPublishedDate,\n    video_processed_date: new Date().toISOString(),\n    source_id: sourceData.sourceId,\n    crop_category_id: sourceData.cropCategoryId,\n    crop_type_id: item.type,\n    min_price: item.min_price,\n    max_price: item.max_price,\n    avg_price: (item.min_price + item.max_price) / 2,\n  },\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        560
+      ],
+      "id": "8a40e669-00b9-4347-928c-237fc9fa52df",
+      "name": "Set crop data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $(\"Source Data\").first().json;\nreturn [\n  {\n    source_id: data.sourceId,\n    video_id: data.videoId,\n    video_published_date: data.videoPublishedDate,\n    video_rejected_date: new Date().toISOString(),\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2304,
+        400
+      ],
+      "id": "3b9d4a13-cdb9-4415-9d76-2bbc0bcbe174",
+      "name": "Set rejected source data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $(\"Source Data\").first().json;\nreturn [\n  {\n    source_id: data.sourceId,\n    video_id: data.videoId,\n    video_published_date: data.videoPublishedDate,\n    video_processed_date: new Date().toISOString(),\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        736
+      ],
+      "id": "87f26bc2-19da-4ce6-b112-5f5d554080c5",
+      "name": "Set processed source data"
+    },
+    {
+      "parameters": {
+        "collection": "sources",
+        "options": {},
+        "query": "{\n  \"type\": \"youtube\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -2832,
+        -208
+      ],
+      "id": "4bb84180-8e9c-49a4-b3f2-c428a418f2ed",
+      "name": "Find documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "OzOUtOkjmZXG1V30",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2576,
+        -208
+      ],
+      "id": "19e30cd1-f8ed-4369-a80d-6bd320e4ff7b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.youtube.com/feeds/videos.xml?channel_id={{ $json.chanel_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -3376,
+        64
+      ],
+      "id": "ab53fed7-a1a0-41d5-ac3e-f170794ae7cb",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3088,
+        -208
+      ],
+      "id": "69da92b2-ea1b-4249-9792-d3b89ad640ea",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1456,
+        656
+      ],
+      "id": "143387b4-2db4-4ade-aaef-896c0a65cc45",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3168,
+        64
+      ],
+      "id": "154e5554-c20d-4af6-876b-d1e1c943fe68",
+      "name": "Loop Over Items1"
     }
   ],
   "pinData": {},
@@ -304,17 +466,6 @@
         [
           {
             "node": "Basic LLM Chain",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "RSS Feed Trigger": {
-      "main": [
-        [
-          {
-            "node": "Adjust source data",
             "type": "main",
             "index": 0
           }
@@ -347,88 +498,7 @@
       "main": [
         [
           {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Flatten the array of crop prices": {
-      "main": [
-        [
-          {
-            "node": "Insert prices",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "Flatten the array of crop prices",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Adjust source data": {
-      "main": [
-        [
-          {
-            "node": "Find documents",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Find documents": {
-      "main": [
-        [
-          {
             "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Merge1",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge1": {
-      "main": [
-        [
-          {
-            "node": "Get Transcript",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge2",
             "type": "main",
             "index": 0
           }
@@ -439,7 +509,226 @@
       "main": [
         [
           {
-            "node": "If1",
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Relevance": {
+      "main": [
+        [
+          {
+            "node": "Check Relevance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find source in rejected sources": {
+      "main": [
+        [
+          {
+            "node": "Merge database results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find source in processed sources": {
+      "main": [
+        [
+          {
+            "node": "Merge database results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Check source validity": {
+      "main": [
+        [
+          {
+            "node": "Check source is valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check source is valid": {
+      "main": [
+        [
+          {
+            "node": "Calculate Relevance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge database results": {
+      "main": [
+        [
+          {
+            "node": "Check source validity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Relevance": {
+      "main": [
+        [
+          {
+            "node": "Get Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set crop data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set processed source data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Source Data": {
+      "main": [
+        [
+          {
+            "node": "Find source in rejected sources",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find source in processed sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set crop data": {
+      "main": [
+        [
+          {
+            "node": "Insert prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set rejected source data": {
+      "main": [
+        [
+          {
+            "node": "Insert in rejected sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set processed source data": {
+      "main": [
+        [
+          {
+            "node": "Insert processed source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Find documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert in rejected sources": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
             "type": "main",
             "index": 0
           }
@@ -448,36 +737,38 @@
     },
     "Insert processed source": {
       "main": [
-        []
-      ]
-    },
-    "Merge2": {
-      "main": [
         [
           {
-            "node": "Code",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If1": {
-      "main": [
-        [
-          {
-            "node": "Merge2",
+            "node": "Merge",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "Code": {
+    "Merge": {
       "main": [
         [
           {
-            "node": "Insert processed source",
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Source Data",
             "type": "main",
             "index": 0
           }
@@ -489,11 +780,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "878d9bce-83b6-419e-b6bf-b65ac2242162",
+  "versionId": "b629ba90-800a-48f3-b484-090deb2dc337",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "fb9f9ae3e91448d1a3b75aef086b18c47d251325e66bcceb4d81abff75e09b7b"
   },
-  "id": "YQIx1IX1ILImkyep",
+  "id": "iGiLL0idXIQr6w8d",
   "tags": []
 }

@@ -1,12 +1,29 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: cropcaster_postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_POSTGRESDB_DATABASE}
+      POSTGRES_USER: ${DB_POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${DB_POSTGRESDB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
   cropcaster:
     image: cropcaster:latest
     container_name: cropcaster
-    ports:
-      - "5678:5678"
     env_file:
       - .env
+    ports:
+      - "5678:5678"
     volumes:
       - ~/.n8n:/home/node/.n8n
       - ./scripts:/scripts
     restart: unless-stopped
+
+volumes:
+  postgres_data:
