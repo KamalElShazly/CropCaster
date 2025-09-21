@@ -1,0 +1,216 @@
+.charts-container {
+  padding: 20px;
+  max-width: 100%;
+}
+
+.charts-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.charts-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.charts-summary {
+  margin: 0;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+/* Category Expansion Panels */
+.category-expansion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-panel {
+  background: #f8fafc !important;
+  border-radius: 16px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.category-header {
+  padding: 16px 24px !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.category-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #1e40af !important;
+  text-transform: capitalize !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.category-icon {
+  font-size: 1.2rem;
+}
+
+.category-description {
+  background: #1e40af !important;
+  color: white !important;
+  padding: 4px 12px !important;
+  border-radius: 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  margin-left: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  max-width: fit-content !important;
+  flex-shrink: 0 !important;
+}
+
+/* Source Expansion Panels */
+.source-expansion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 24px 24px 24px;
+}
+
+.source-panel {
+  background: white !important;
+  border-radius: 12px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.source-header {
+  padding: 12px 20px !important;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.source-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.source-icon {
+  font-size: 1rem;
+}
+
+.source-description {
+  background: #374151 !important;
+  color: white !important;
+  padding: 4px 12px !important;
+  border-radius: 10px !important;
+  font-size: 0.65rem !important;
+  font-weight: 500 !important;
+  margin-left: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  max-width: fit-content !important;
+  flex-shrink: 0 !important;
+}
+
+/* Type Charts Grid */
+.type-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+/* No Data State */
+.no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+}
+
+.no-data-content {
+  text-align: center;
+  color: #6b7280;
+}
+
+.no-data-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.no-data-content p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .type-charts-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .charts-container {
+    padding: 16px;
+  }
+
+  .charts-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .source-expansion {
+    padding: 12px 16px 16px 16px;
+  }
+
+  .source-header {
+    padding: 10px 16px !important;
+  }
+
+  .category-header {
+    padding: 12px 20px !important;
+  }
+
+  .type-charts-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .charts-container {
+    padding: 12px;
+  }
+
+  .source-expansion {
+    padding: 8px 12px 12px 12px;
+  }
+
+  .source-header {
+    padding: 8px 12px !important;
+  }
+
+  .category-header {
+    padding: 10px 16px !important;
+  }
+
+  .charts-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .category-title {
+    font-size: 1.25rem !important;
+  }
+
+  .source-title {
+    font-size: 1.125rem !important;
+  }
+}

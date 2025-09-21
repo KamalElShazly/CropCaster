@@ -1,0 +1,148 @@
+.chart-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+  margin: 16px 0;
+  border: 1px solid #e5e7eb;
+}
+
+.chart-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.chart-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.chart-title::before {
+  content: '📊';
+  font-size: 1rem;
+}
+
+.data-summary {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-items {
+  display: flex;
+  gap: 4px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: wrap;
+}
+
+.summary-items .summary-label {
+  display: inline;
+}
+
+.summary-item .label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-item .value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}
+
+.chart-canvas {
+  max-height: 400px;
+}
+
+.no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #6b7280;
+  font-style: italic;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border: 2px dashed #d1d5db;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 16px;
+    margin: 12px 0;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .data-summary {
+    gap: 16px;
+  }
+
+  .chart-wrapper {
+    height: 300px;
+  }
+
+  .chart-canvas {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-container {
+    padding: 12px;
+  }
+
+  .chart-title {
+    font-size: 1.125rem;
+  }
+
+  .data-summary {
+    gap: 12px;
+  }
+
+  .summary-item .value {
+    font-size: 1rem;
+  }
+
+  .chart-wrapper {
+    height: 250px;
+  }
+
+  .chart-canvas {
+    max-height: 250px;
+  }
+}
+
+/* Chart.js custom styling */
+:host ::ng-deep .chartjs-render-monitor {
+  border-radius: 8px;
+}

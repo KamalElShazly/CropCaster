@@ -1,0 +1,11 @@
+<div *ngIf="loading">Loading...</div>
+<div *ngIf="error">{{ error }}</div>
+
+<mat-tab-group *ngIf="!loading && !error">
+    <mat-tab label="Charts">
+        <app-crop-prices-charts [data]="data"></app-crop-prices-charts>
+    </mat-tab>
+    <mat-tab label="Table">
+        <app-crop-prices-table [data]="data"></app-crop-prices-table>
+    </mat-tab>
+</mat-tab-group>

@@ -1,17 +1,2 @@
-# Node / n8n
-node_modules/
-.n8n/
-
-# Local environment variables
-.env
-
-# Python cache
-__pycache__/
-*.pyc
-
-# Docker files
-*.log
-*.tmp
-
-# System files
-.DS_Store
+# VS Code
+.vscode
