@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CropDetails } from '../models/crop-details';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CropPricesService {
-  private apiUrl = '/api/prices';
+  private apiUrl = `${environment.baseUrl}/api/prices`;
 
   constructor(private http: HttpClient) {}
 
