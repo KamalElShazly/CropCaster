@@ -1,0 +1,852 @@
+{
+  "name": "Youtube Video Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"source\": {\n    \"_id\": \"68c0c9933137323932dc9cb9\",\n    \"source_id\": \"modern_agriculture_youtube\",\n    \"name_ar\": \"قناة الزراعة الحديثة\",\n    \"name_en\": \"Modern Agriculture Channel\",\n    \"type\": \"youtube\",\n    \"url\": \"https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ\",\n    \"chanel_id\": \"UCUahHBzRfv4N5fvTy2UJ9qQ\"\n  },\n  \"video\": {\n    \"title\": \"💰 الحقيقة الكاملة عن سعر السمسم النهارده | تبيع ولا تستنى؟\",\n    \"link\": \"https://www.youtube.com/watch?v=Mezwl0OVkGU\",\n    \"pubDate\": \"2025-09-21T04:00:26.000Z\",\n    \"author\": \"الزراعة الحديثة\",\n    \"id\": \"yt:video:Mezwl0OVkGU\",\n    \"isoDate\": \"2025-09-21T04:00:26.000Z\"\n  }\n}"
+      },
+      "id": "b6b39f3a-ddf6-4cf5-8d41-583fceb41b4e",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1200,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "collection": "processed_sources",
+        "options": {},
+        "query": "={\n  \"source_id\": \"{{ $json.source.source_id }}\",\n  \"video_id\": \"{{ $json.video.videoId }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        128
+      ],
+      "id": "4f1e0218-f458-4af7-8cea-3b45e46e8982",
+      "name": "Find source in processed sources",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "atuQlsTpZSEKAHMP",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8278becc-21a3-4bef-a9ae-a7f9111e4385",
+              "leftValue": "={{ $json.isValid }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        32
+      ],
+      "id": "ff91b2d3-24f2-4696-9486-4dbeac1e684e",
+      "name": "Check source is valid"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -512,
+        32
+      ],
+      "id": "c92d0934-5b29-46d1-81cf-043e06768c4e",
+      "name": "Merge database results"
+    },
+    {
+      "parameters": {
+        "jsCode": "const json = $(\"Set Video Data\").first().json;\n// Content Relevance Filter with Arabic Text Normalization\nconst title = json.video.title || \"\";\n\n// Normalize Arabic text to handle different forms of the same letters\nfunction normalizeArabic(text) {\n  return text\n    .replace(/[أإآ]/g, \"ا\") // Normalize alef variations\n    .replace(/[ة]/g, \"ه\") // Normalize ta marbuta\n    .replace(/[ي]/g, \"ي\") // Normalize ya variations\n    .replace(/[ؤ]/g, \"و\") // Normalize waw with hamza\n    .replace(/[ئ]/g, \"ي\") // Normalize ya with hamza\n    .replace(/[ء]/g, \"\") // Remove hamza\n    .replace(/\\s+/g, \" \") // Normalize spaces\n    .trim()\n    .toLowerCase();\n}\n\n// Normalize the input text\nconst normalizedTitle = normalizeArabic(title);\n\n// Keywords that indicate rice/barley price content (normalized)\nconst relevantKeywords = [\n  \"اسعار\",\n  \"ارز\",\n  \"شعير\",\n  \"اسعار اليوم\",\n  \"اسعار الارز\",\n  \"اسعار الشعير\",\n  \"اسعار الارز اليوم\",\n  \"اسعار الشعير اليوم\",\n  \"سعر الارز\",\n  \"سعر الشعير\",\n  \"اسعار الحبوب\",\n  \"اسعار المحاصيل\",\n  \"اسعار الارز الابيض\",\n  \"اسعار الشعير العريض\",\n  \"اسعار الشعير الرفيع\",\n  \"اسعار الارز الابيض العريض\",\n  \"اسعار الارز الابيض الرفيع\",\n  \"اسعار الشعير العريض\",\n  \"اسعار الشعير الرفيع\",\n  \"اسعار اليوم\",\n  \"اسعار السوق\",\n  \"اسعار الحبوب اليوم\",\n];\n\n// Get matched keywords in single pass\nconst matchedKeywords = relevantKeywords.filter(\n  (keyword) =>\n    normalizedTitle.includes(keyword)\n);\n\n// Calculate relevance score and determine if relevant\nconst relevanceScore = Math.min(100, matchedKeywords.length * 20);\nconst isRelevant = relevanceScore > 0;\n\n// Add relevance analysis as a structured object\njson.relevance = {\n  isRelevant: isRelevant,\n  relevanceScore: relevanceScore,\n  matchedKeywords: matchedKeywords,\n  originalTitle: title,\n  normalizedTitle: normalizedTitle,\n  totalKeywordsChecked: relevantKeywords.length,\n  matchedKeywordsCount: matchedKeywords.length,\n};\n\nreturn json;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        16
+      ],
+      "id": "04c68614-6ee0-4efa-9191-eb24b1a81a26",
+      "name": "Calculate Relevance"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7d947ddb-ea5f-444f-b75c-f82bfd73f271",
+              "leftValue": "={{ $json.relevance.isRelevant }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        16
+      ],
+      "id": "01afafbf-7dd1-4790-9d1f-ac5a380f90d1",
+      "name": "Check Relevance"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process merged results from both MongoDB queries\nconst rejectedResults = $input.first().json; // Results from rejected_videos query\nconst processedResults = $input.last().json; // Results from processed_sources query\n\n// Check if video was found in either collection\nconst isRejected = rejectedResults && Object.keys(rejectedResults).length > 0;\nconst isProcessed = processedResults && Object.keys(processedResults).length > 0;\n\nreturn { isValid: !isRejected && !isProcessed };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        32
+      ],
+      "id": "f7520e96-8c67-4a58-9d44-574d5f06ef16",
+      "name": "Check video validity"
+    },
+    {
+      "parameters": {
+        "collection": "rejected_sources",
+        "options": {},
+        "query": "={\n  \"source_id\": \"{{ $json.source.source_id }}\",\n  \"video_id\": \"{{ $json.video.videoId }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        -64
+      ],
+      "id": "2798db6b-1fed-46c9-8c43-78f2368acc5d",
+      "name": "Find source in rejected sources",
+      "credentials": {
+        "mongoDb": {
+          "id": "atuQlsTpZSEKAHMP",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const json = $(\"Set Video Data\").first().json;\nreturn [\n  {\n    source_id: json.source.source_id,\n    video_id: json.video.videoId,\n    video_published_date: json.video.pubDate,\n    video_rejected_date: new Date().toISOString(),\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        112
+      ],
+      "id": "184aadba-e46e-45a1-8d80-3c0fdb1446ac",
+      "name": "Set rejected source data"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=python3 /scripts/get_transcript.py {{ $json.video.videoId }}"
+      },
+      "name": "Get Transcript",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -144
+      ],
+      "id": "e3c4fc2b-7563-4348-a9b7-81fa9e7ed43b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f5cdfd21-db0f-4302-b0f0-cc9907fb8943",
+              "leftValue": "={{ $json.has_prices }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        -144
+      ],
+      "id": "4cd0dea9-edd5-42cc-b0ea-7388d9db6015",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "mqiTJQv6hDPLS6ny",
+          "mode": "list",
+          "cachedResultName": "Insert Rejected Video Source"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source_id": "={{ $json.source_id }}",
+            "video_id": "={{ $json.video_id }}",
+            "video_published_date": "={{ $json.video_published_date }}",
+            "video_rejected_date": "={{ $json.video_rejected_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_published_date",
+              "displayName": "video_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_rejected_date",
+              "displayName": "video_rejected_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        112
+      ],
+      "id": "358a8f85-799f-43ba-9640-f7d2a58bdcbb",
+      "name": "Insert Rejected Video Source"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "WuXViPjpfbejoAQ2",
+          "mode": "list",
+          "cachedResultName": "Extract Prices"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ $json.stdout }}"
+          },
+          "matchingColumns": [
+            "text"
+          ],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        -144
+      ],
+      "id": "17b1353c-203e-4cd8-ac14-6601f15f4fbe",
+      "name": "Extract Prices"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $(\"Set Video Data\").first().json;\nconst aiData = $input.first().json;\nconst cropCategoryId = \"rice\";\n\nreturn aiData.data.map((item) => ({\n  json: {\n    source_id: data.source.source_id,\n    crop_category_id: cropCategoryId,\n    crop_type_id: item.type,\n    min_price: item.min_price,\n    max_price: item.max_price,\n    video_published_date: data.video.pubDate,\n    video_processed_date: new Date().toISOString(),\n  },\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -352
+      ],
+      "id": "61d3b9d8-b36c-4a4b-91db-5c02a903079a",
+      "name": "Set prices data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const url = $input.first().json.video.link\nlet videoId = null;\n\nif (url.includes(\"watch?v=\")) {\n  // Normal YouTube video\n  videoId = url.split(\"v=\")[1].split(\"&\")[0];\n} else if (url.includes(\"shorts/\")) {\n  // YouTube Shorts\n  videoId = url.split(\"shorts/\")[1].split(\"?\")[0];\n}\n\nvar json = $input.first().json;\njson.video.videoId = videoId;\nreturn json;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -992,
+        32
+      ],
+      "id": "155d1400-d91b-433c-bbd6-f073718141bb",
+      "name": "Set Video Data"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "MT7mAwC2Uj8VDrXJ",
+          "mode": "list",
+          "cachedResultName": "Insert Prices"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "min_price": "={{ $json.min_price }}",
+            "max_price": "={{ $json.max_price }}",
+            "source_id": "={{ $json.source_id }}",
+            "crop_category_id": "={{ $json.crop_category_id }}",
+            "crop_type_id": "={{ $json.crop_type_id }}",
+            "video_published_date": "={{ $json.video_published_date }}",
+            "video_processed_date": "={{ $json.video_processed_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "crop_category_id",
+              "displayName": "crop_category_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "crop_type_id",
+              "displayName": "crop_type_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "min_price",
+              "displayName": "min_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "max_price",
+              "displayName": "max_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "video_published_date",
+              "displayName": "video_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "video_processed_date",
+              "displayName": "video_processed_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1664,
+        -352
+      ],
+      "id": "ada558d0-84ae-4f11-8fa4-9e0828ffa544",
+      "name": "Insert Prices"
+    },
+    {
+      "parameters": {
+        "jsCode": "const json = $(\"Set Video Data\").first().json;\nreturn [\n  {\n    source_id: json.source.source_id,\n    video_id: json.video.videoId,\n    video_published_date: json.video.pubDate,\n    video_rejected_date: new Date().toISOString(),\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -96
+      ],
+      "id": "4c6dc234-7171-4495-852d-c060169f2d04",
+      "name": "Set processed source"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "l3Ot7Z5JeVUM2j1R",
+          "mode": "list",
+          "cachedResultName": "Insert Processed Video Source"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source_id": "={{ $json.source_id }}",
+            "video_id": "={{ $json.video_id }}",
+            "video_published_date": "={{ $json.video_published_date }}",
+            "video_rejected_date": "={{ $json.video_rejected_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_published_date",
+              "displayName": "video_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_rejected_date",
+              "displayName": "video_rejected_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        -96
+      ],
+      "id": "7cb84157-ddf8-4df8-8387-69431c165077",
+      "name": "Insert Processed Video Source"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1952,
+        -208
+      ],
+      "id": "a91eb927-6f48-4890-a4aa-402dfeb35ac8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2176,
+        -208
+      ],
+      "id": "bd6f94e2-05d9-49a3-998f-2a1a17f6abdf",
+      "name": "Wait",
+      "webhookId": "029d3b57-4aa9-424f-acf4-a2b2495073f2"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "source": {
+            "_id": "68c0c9933137323932dc9cb9",
+            "source_id": "modern_agriculture_youtube",
+            "name_ar": "قناة الزراعة الحديثة",
+            "name_en": "Modern Agriculture Channel",
+            "type": "youtube",
+            "url": "https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ",
+            "chanel_id": "UCUahHBzRfv4N5fvTy2UJ9qQ"
+          },
+          "video": {
+            "title": "💰 الحقيقة الكاملة عن سعر السمسم النهارده | تبيع ولا تستنى؟",
+            "link": "https://www.youtube.com/watch?v=Mezwl0OVkGU",
+            "pubDate": "2025-09-21T04:00:26.000Z",
+            "author": "الزراعة الحديثة",
+            "id": "yt:video:Mezwl0OVkGU",
+            "isoDate": "2025-09-21T04:00:26.000Z"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Video Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find source in processed sources": {
+      "main": [
+        [
+          {
+            "node": "Merge database results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Check source is valid": {
+      "main": [
+        [
+          {
+            "node": "Calculate Relevance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Merge database results": {
+      "main": [
+        [
+          {
+            "node": "Check video validity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Relevance": {
+      "main": [
+        [
+          {
+            "node": "Check Relevance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Relevance": {
+      "main": [
+        [
+          {
+            "node": "Get Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check video validity": {
+      "main": [
+        [
+          {
+            "node": "Check source is valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find source in rejected sources": {
+      "main": [
+        [
+          {
+            "node": "Merge database results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set rejected source data": {
+      "main": [
+        [
+          {
+            "node": "Insert Rejected Video Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Transcript": {
+      "main": [
+        [
+          {
+            "node": "Extract Prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Rejected Video Source": {
+      "main": [
+        []
+      ]
+    },
+    "Extract Prices": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set prices data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set processed source",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set prices data": {
+      "main": [
+        [
+          {
+            "node": "Insert Prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Video Data": {
+      "main": [
+        [
+          {
+            "node": "Find source in rejected sources",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find source in processed sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Prices": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set processed source": {
+      "main": [
+        [
+          {
+            "node": "Insert Processed Video Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Processed Video Source": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b7d98ad6-638e-43ea-b6fb-9b69b19cc68f",
+  "meta": {
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "zT5Wr9Iv9XAin0dh",
+  "tags": []
+}

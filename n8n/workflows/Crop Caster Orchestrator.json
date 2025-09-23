@@ -1,0 +1,187 @@
+{
+  "name": "Crop Caster Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "collection": "sources",
+        "options": {},
+        "query": "{\n  \"type\": \"youtube\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        0
+      ],
+      "id": "2b6d25c4-64cb-4c62-812d-e8e920071ec3",
+      "name": "Find documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "atuQlsTpZSEKAHMP",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b451051a-1a76-4f84-ad9c-ae4afff531bc",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sjcRI9AsSBJtsmPr",
+          "mode": "list",
+          "cachedResultName": "Youtube Source Handler"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "_id",
+              "displayName": "_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "name_ar",
+              "displayName": "name_ar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "name_en",
+              "displayName": "name_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chanel_id",
+              "displayName": "chanel_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "91de0741-2b1c-4255-91d5-386c9b1d30e9",
+      "name": "Youtube Source Handler"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "Youtube Source Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Find documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Youtube Source Handler": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b2ed66cd-3ee1-46fc-8f31-7c3aef0954d3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "Xr86bU7uoDKeLM03",
+  "tags": []
+}

@@ -1,0 +1,95 @@
+{
+  "name": "Insert Processed Video Source",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "source_id"
+            },
+            {
+              "name": "video_id"
+            },
+            {
+              "name": "video_published_date"
+            },
+            {
+              "name": "video_processed_date"
+            }
+          ]
+        }
+      },
+      "id": "f3762ab5-b018-4aaf-9e61-4d4c0cd7fc04",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -48,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "processed_sources",
+        "fields": "source_id,video_id,video_published_date,video_processed_date",
+        "options": {
+          "dateFields": "video_published_date,video_processed_date"
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "45d90685-c193-4f43-8408-53adc1b5503b",
+      "name": "Insert processed source",
+      "credentials": {
+        "mongoDb": {
+          "id": "atuQlsTpZSEKAHMP",
+          "name": "MongoDB account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "_id": "68c0c9933137323932dc9cb9",
+          "source_id": "modern_agriculture_youtube",
+          "name_ar": "قناة الزراعة الحديثة",
+          "name_en": "Modern Agriculture Channel",
+          "type": "youtube",
+          "url": "https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ",
+          "chanel_id": "UCUahHBzRfv4N5fvTy2UJ9qQ"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Insert processed source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "342fdc21-4e9b-4e2f-87ff-f3fe092a1059",
+  "meta": {
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "l3Ot7Z5JeVUM2j1R",
+  "tags": []
+}

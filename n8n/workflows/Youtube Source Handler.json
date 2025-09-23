@@ -1,0 +1,164 @@
+{
+  "name": "Youtube Source Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "  {\n    \"_id\": \"68c0c9933137323932dc9cb9\",\n    \"source_id\": \"modern_agriculture_youtube\",\n    \"name_ar\": \"قناة الزراعة الحديثة\",\n    \"name_en\": \"Modern Agriculture Channel\",\n    \"type\": \"youtube\",\n    \"url\": \"https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ\",\n    \"chanel_id\": \"UCUahHBzRfv4N5fvTy2UJ9qQ\"\n  }"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -224,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.youtube.com/feeds/videos.xml?channel_id={{ $json.chanel_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        720
+      ],
+      "id": "7e621e45-6b83-4bdd-a83b-74dcc078cd8e",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const source = $('When Executed by Another Workflow').item.json;\nconst video = $input.item.json;\n\nreturn {\n  \"source\": source,\n  \"video\": video\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        720
+      ],
+      "id": "b3ab81a2-5bf2-43a0-8683-a19c78396f1b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zT5Wr9Iv9XAin0dh",
+          "mode": "list",
+          "cachedResultName": "Youtube Video Handler"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source }}",
+            "video": "={{ $json.video }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object"
+            },
+            {
+              "id": "video",
+              "displayName": "video",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        720
+      ],
+      "id": "8cfff766-9198-458e-87d0-101c0e6291ff",
+      "name": "Youtube Video Handler"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "_id": "68c0c9933137323932dc9cb9",
+          "source_id": "modern_agriculture_youtube",
+          "name_ar": "قناة الزراعة الحديثة",
+          "name_en": "Modern Agriculture Channel",
+          "type": "youtube",
+          "url": "https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ",
+          "chanel_id": "UCUahHBzRfv4N5fvTy2UJ9qQ"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Youtube Video Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Youtube Video Handler": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d10efb38-d6c1-4053-a6c3-9cc810314d11",
+  "meta": {
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "sjcRI9AsSBJtsmPr",
+  "tags": []
+}

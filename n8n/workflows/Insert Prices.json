@@ -1,0 +1,106 @@
+{
+  "name": "Insert Prices",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "source_id"
+            },
+            {
+              "name": "crop_category_id"
+            },
+            {
+              "name": "crop_type_id"
+            },
+            {
+              "name": "min_price",
+              "type": "number"
+            },
+            {
+              "name": "max_price",
+              "type": "number"
+            },
+            {
+              "name": "video_published_date"
+            },
+            {
+              "name": "video_processed_date"
+            }
+          ]
+        }
+      },
+      "id": "72ffdc88-b9c7-44cc-b7b7-dc2db3a41766",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -48,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "prices",
+        "fields": "source_id,crop_category_id,crop_type_id,min_price,max_price,video_published_date,video_processed_date",
+        "options": {
+          "dateFields": "video_published_date,video_processed_date"
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "47f69c13-2356-4298-a1ef-8faf6ab0dd6b",
+      "name": "Insert prices",
+      "credentials": {
+        "mongoDb": {
+          "id": "atuQlsTpZSEKAHMP",
+          "name": "MongoDB account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "_id": "68c0c9933137323932dc9cb9",
+          "source_id": "modern_agriculture_youtube",
+          "name_ar": "قناة الزراعة الحديثة",
+          "name_en": "Modern Agriculture Channel",
+          "type": "youtube",
+          "url": "https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ",
+          "chanel_id": "UCUahHBzRfv4N5fvTy2UJ9qQ"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Insert prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4333c8db-01bc-4a4f-8374-07ce07ded4e5",
+  "meta": {
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "MT7mAwC2Uj8VDrXJ",
+  "tags": []
+}
