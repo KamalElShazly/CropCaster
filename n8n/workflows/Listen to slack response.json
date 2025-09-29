@@ -1,0 +1,979 @@
+{
+  "name": "Listen to slack response",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0cf71861-712a-4764-aadb-b76f81486167",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -752,
+        144
+      ],
+      "id": "ebcdf6c2-2165-4e36-bcd6-47672084df4c",
+      "name": "Webhook",
+      "webhookId": "0cf71861-712a-4764-aadb-b76f81486167"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value = $input.first().json.value;\n\nreturn [\n  {\n    source_id: value.source.source_id,\n    video_id: value.video.videoId,\n    video_published_date: value.video.pubDate,\n    video_rejected_date: new Date().toISOString(),\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -48
+      ],
+      "id": "68e52edf-8e95-4086-a706-4a7dcd067b08",
+      "name": "Set rejected source data"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "mqiTJQv6hDPLS6ny",
+          "mode": "list",
+          "cachedResultName": "Insert Rejected Video Source"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source_id": "={{ $json.source_id }}",
+            "video_id": "={{ $json.video_id }}",
+            "video_published_date": "={{ $json.video_published_date }}",
+            "video_rejected_date": "={{ $json.video_rejected_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_published_date",
+              "displayName": "video_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_rejected_date",
+              "displayName": "video_rejected_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        -48
+      ],
+      "id": "d6d0601d-9b0f-4334-bc6d-e7ff2484ee5d",
+      "name": "Insert Rejected Video Source"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value = $input.first().json.value;\nconst cropCategoryId = \"rice\";\n\nreturn value.results.map((item) => ({\n  json: {\n    source_id: value.source.source_id,\n    crop_category_id: cropCategoryId,\n    crop_type_id: item.type,\n    min_price: item.min_price,\n    max_price: item.max_price,\n    video_published_date: value.video.pubDate,\n    video_processed_date: new Date().toISOString(),\n  },\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -416
+      ],
+      "id": "5a1322e6-9b46-457d-a9f5-ba9acecfec1f",
+      "name": "Set prices data"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "MT7mAwC2Uj8VDrXJ",
+          "mode": "list",
+          "cachedResultName": "Insert Prices"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "min_price": "={{ $json.min_price }}",
+            "max_price": "={{ $json.max_price }}",
+            "source_id": "={{ $json.source_id }}",
+            "crop_category_id": "={{ $json.crop_category_id }}",
+            "crop_type_id": "={{ $json.crop_type_id }}",
+            "video_published_date": "={{ $json.video_published_date }}",
+            "video_processed_date": "={{ $json.video_processed_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "crop_category_id",
+              "displayName": "crop_category_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "crop_type_id",
+              "displayName": "crop_type_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "min_price",
+              "displayName": "min_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "max_price",
+              "displayName": "max_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "video_published_date",
+              "displayName": "video_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "video_processed_date",
+              "displayName": "video_processed_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        -416
+      ],
+      "id": "4f97e783-4b19-42af-a207-d83e63685869",
+      "name": "Insert Prices"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value = $input.first().json.value;\n\nreturn [\n  {\n    source_id: value.source.source_id,\n    video_id: value.video.videoId,\n    video_published_date: value.video.pubDate,\n    video_processed_date: new Date().toISOString(),\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -240
+      ],
+      "id": "fd57092b-5af5-400c-850e-a096d9a47ff2",
+      "name": "Set processed source"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "l3Ot7Z5JeVUM2j1R",
+          "mode": "list",
+          "cachedResultName": "Insert Processed Video Source"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source_id": "={{ $json.source_id }}",
+            "video_id": "={{ $json.video_id }}",
+            "video_published_date": "={{ $json.video_published_date }}",
+            "video_rejected_date": "={{ $json.video_rejected_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_published_date",
+              "displayName": "video_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "video_rejected_date",
+              "displayName": "video_rejected_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        -240
+      ],
+      "id": "40531154-4ef7-4390-94bc-f0bcd5d4af6c",
+      "name": "Insert Processed Video Source"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1168,
+        -320
+      ],
+      "id": "1faf4819-7a1e-4858-ae63-7a642eddb0c8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const switchData = $(\"Switch action value\").item.json;\nconst triggerId = switchData.payload.trigger_id;\nconst fileId = switchData.value.file_id;\nconst messageTs = switchData.payload.message.ts;\nconst input = $input.first().json;\nconst chunkSize = 2500; // slightly below Slack limit (3000)\nconst chunks = [];\n\n// Split transcript into chunks\nfor (let i = 0; i < input.text.length; i += chunkSize) {\n  chunks.push(input.text.substring(i, i + chunkSize));\n}\n\nconst transcriptBlocks = chunks.map((chunk) => ({\n  type: \"section\",\n  text: {\n    type: \"mrkdwn\",\n    text: `\\`\\`\\`${chunk}\\`\\`\\``,\n  },\n}));\n\nconst blocks = [\n  {\n    type: \"section\",\n    text: {\n      type: \"mrkdwn\",\n      text: `*Source:* ${input.source.name_en}\\n*Video:* <${input.video.link}|${input.video.title}> \\n*Published:* ${input.video.pubDate}>`,\n    },\n  },\n  { type: \"divider\" },\n  {\n    type: \"section\",\n    text: {\n      type: \"mrkdwn\",\n      text: \"*Transcript:*\",\n    },\n  },\n  {\n    type: \"input\",\n    block_id: \"results_block\",\n    element: {\n      type: \"plain_text_input\",\n      multiline: true,\n      action_id: \"results_input\",\n      initial_value: JSON.stringify(input.results, null, 2),\n    },\n    label: {\n      type: \"plain_text\",\n      text: \"AI Results\",\n    },\n  },\n  { type: \"divider\" },\n  ...transcriptBlocks,\n];\n\nconst result = {\n  trigger_id: triggerId,\n  view: {\n    type: \"modal\",\n    callback_id: \"review_modal\",\n    title: {\n      type: \"plain_text\",\n      text: \"Review AI Data\",\n    },\n    private_metadata: JSON.stringify({\n      file_id: fileId,\n      message_ts: messageTs,\n      source: input.source,\n      video: input.video,\n    }),\n    blocks: blocks,\n    submit: {\n      type: \"plain_text\",\n      text: \"Approve\",\n    },\n    close: {\n      type: \"plain_text\",\n      text: \"Cancel\",\n    },\n  },\n};\n\nreturn result;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        144
+      ],
+      "id": "9cc5eedf-fc7a-4138-afe8-bde791a77a03",
+      "name": "Set slack modal data"
+    },
+    {
+      "parameters": {
+        "jsCode": "return JSON.parse($input.first().json.data);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        144
+      ],
+      "id": "845ccc95-ece1-4842-b4f6-c8ef31579fae",
+      "name": "Map response"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.value.file_url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        144
+      ],
+      "id": "54f626f9-9190-488c-a46d-8311c0e54ff2",
+      "name": "Get file content",
+      "credentials": {
+        "slackApi": {
+          "id": "9ZfOUYa7935pkuZq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/views.open",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1312,
+        144
+      ],
+      "id": "1918f11f-6386-4d4c-b0ed-01d73038f868",
+      "name": "Send slack modal",
+      "credentials": {
+        "slackApi": {
+          "id": "9ZfOUYa7935pkuZq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = JSON.parse($json.body.payload);\n\nreturn payload;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        144
+      ],
+      "id": "7e5ea2d4-b9ae-40bf-af25-3fa67d35f067",
+      "name": "Extract Payload"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "block_actions",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7d54133e-6d1d-4752-bf13-b5abfef8c71a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cd3e9a03-760d-4ee1-815d-04b87eb92a89",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "view_submission",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -288,
+        144
+      ],
+      "id": "579dc0a3-e1a0-4e2e-967e-f1045fd5d00a",
+      "name": "Switch payload type"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $(\"Extract Payload\").first().json;\nconst value = JSON.parse(payload.actions[0].value);\nconst data = {\n  \"payload\": payload,\n  \"value\": value\n}\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -48
+      ],
+      "id": "f7b63ceb-0783-41f3-ac57-5b1ce2408118",
+      "name": "Extract action values"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $(\"Extract Payload\").first().json;\nconst results = JSON.parse(\n  payload.view.state.values.results_block.results_input.value,\n);\nconst metadata = JSON.parse(payload.view.private_metadata);\n\nconst data = {\n  payload: payload,\n  value: {\n    results: results,\n    file_id: metadata.file_id,\n    message_ts: metadata.message_ts,\n    source: metadata.source,\n    video: metadata.video,\n  },\n};\nreturn data;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        336
+      ],
+      "id": "e194d3c2-72f4-4e21-8618-533b4c770c87",
+      "name": "Extract modal values"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.value.action }}",
+                    "rightValue": "approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2d406dc2-ac3c-4d28-a12f-05867ea9c485"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dedddee8-a02a-43be-b58c-ae980ade5dc9",
+                    "leftValue": "={{ $json.value.action }}",
+                    "rightValue": "reject",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bf08bfac-efd5-4ac2-b1ac-f8d51fe5d7be",
+                    "leftValue": "={{ $json.value.action }}",
+                    "rightValue": "edit",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        352,
+        -64
+      ],
+      "id": "50ec0985-d1be-4df8-92c2-1810cc014c03",
+      "name": "Switch action value"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "48e37423-d067-425d-bb8c-a2e9ee901721",
+      "name": "Respond to actions"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"response_action\": \"clear\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        336
+      ],
+      "id": "938385f0-8dea-413e-b772-23e422dc3dc4",
+      "name": "Respond to view"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09HB3US5J9",
+          "mode": "list",
+          "cachedResultName": "crop-caster"
+        },
+        "timestamp": "={{ $json.message_ts }}"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1712,
+        -32
+      ],
+      "id": "f4a9f18c-b1b9-445b-b44d-be77a81b2d6b",
+      "name": "Delete a message",
+      "webhookId": "be35cf04-67bd-44d1-85a0-9a3a2c801e62",
+      "credentials": {
+        "slackApi": {
+          "id": "9ZfOUYa7935pkuZq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/files.delete",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"file\": \"{{ $json.file_id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1712,
+        -224
+      ],
+      "id": "d0ef0091-c2b3-4a5f-a421-996242fda3ab",
+      "name": "HTTP Request",
+      "credentials": {
+        "slackApi": {
+          "id": "9ZfOUYa7935pkuZq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $(\"Extract Payload\").first().json;\n\nvar result;\n\nif (payload.type == \"block_actions\") {\n  const actionValue = JSON.parse(payload.actions[0].value);\n  result = {\n    \"file_id\": actionValue.file_id,\n    \"message_ts\": payload.message.ts,\n  }\n} else if (payload.type == \"view_submission\") {\n  const modalValue = $(\"Extract modal values\").first().json.value;\n  result = {\n    \"file_id\": modalValue.file_id,\n    \"message_ts\": modalValue.message.ts,\n  }\n} else {\n  throw new Error(\"Workflow stopped due to unknown slack payload type.\");\n}\n\nreturn result"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        -128
+      ],
+      "id": "d1d726bd-d863-46bb-bb43-0072ec58a8ec",
+      "name": "Clean slack"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "answeringly-unencysted-piper.ngrok-free.dev",
+            "user-agent": "Slackbot 1.0 (+https://api.slack.com/robots)",
+            "content-length": "13103",
+            "accept": "application/json,*/*",
+            "accept-encoding": "gzip,deflate",
+            "content-type": "application/x-www-form-urlencoded",
+            "x-forwarded-for": "3.236.47.145",
+            "x-forwarded-host": "answeringly-unencysted-piper.ngrok-free.dev",
+            "x-forwarded-proto": "https",
+            "x-slack-request-timestamp": "1759169752",
+            "x-slack-signature": "v0=2f3f442a744e04852ab7605f68d97d73e8abfc4e80f3707b4165fdae8e02a7c6"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "payload": "{\"type\":\"block_actions\",\"user\":{\"id\":\"U024XEA9UUV\",\"username\":\"kamalelshazly92\",\"name\":\"kamalelshazly92\",\"team_id\":\"T0250NTDR7D\"},\"api_app_id\":\"A09HDKD6BGW\",\"token\":\"gWMghR6x11dKvO9ytLxLqZdY\",\"container\":{\"type\":\"message\",\"message_ts\":\"1759169335.458539\",\"channel_id\":\"C09HB3US5J9\",\"is_ephemeral\":false},\"trigger_id\":\"9597980007699.2170775467251.5419399460c3229f276e4e94b122ac0a\",\"team\":{\"id\":\"T0250NTDR7D\",\"domain\":\"personal-tio3269\"},\"enterprise\":null,\"is_enterprise_install\":false,\"channel\":{\"id\":\"C09HB3US5J9\",\"name\":\"crop-caster\"},\"message\":{\"user\":\"U09HU9UHDED\",\"type\":\"message\",\"ts\":\"1759169335.458539\",\"bot_id\":\"B09HU9UEQHF\",\"app_id\":\"A09HDKD6BGW\",\"text\":\"Approve button Reject button Edit button _Automated with this <http:\\/\\/localhost:5678\\/workflow\\/IGreB8Q59lfgy9WR?utm_source=n8n-internal&amp;utm_medium=powered_by&amp;utm_campaign=n8n-nodes-base.slack_e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b|n8n workflow>_\",\"team\":\"T0250NTDR7D\",\"blocks\":[{\"type\":\"actions\",\"block_id\":\"fqqdU\",\"elements\":[{\"type\":\"button\",\"action_id\":\"EMlX8\",\"text\":{\"type\":\"plain_text\",\"text\":\"Approve\",\"emoji\":true},\"style\":\"primary\",\"value\":\"{\\\"action\\\":\\\"approve\\\",\\\"file_id\\\":\\\"F09J58TBMMX\\\",\\\"file_url\\\":\\\"https:\\/\\/files.slack.com\\/files-pri\\/T0250NTDR7D-F09J58TBMMX\\/data_1759169332010.json\\\",\\\"file_permalink\\\":\\\"https:\\/\\/personal-tio3269.slack.com\\/files\\/U09HU9UHDED\\/F09J58TBMMX\\/data_1759169332010.json\\\",\\\"results\\\":[{\\\"type\\\":\\\"broad_white_rice\\\",\\\"min_price\\\":24500,\\\"max_price\\\":24800},{\\\"type\\\":\\\"small_white_rice\\\",\\\"min_price\\\":18600,\\\"max_price\\\":18800},{\\\"type\\\":\\\"broad_barely_rice\\\",\\\"min_price\\\":15600,\\\"max_price\\\":15800},{\\\"type\\\":\\\"small_barely_rice\\\",\\\"min_price\\\":12500,\\\"max_price\\\":12800}],\\\"source\\\":{\\\"_id\\\":\\\"68c0c9933137323932dc9cb9\\\",\\\"source_id\\\":\\\"modern_agriculture_youtube\\\",\\\"name_ar\\\":\\\"\\u0642\\u0646\\u0627\\u0629 \\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"name_en\\\":\\\"Modern Agriculture Channel\\\",\\\"type\\\":\\\"youtube\\\",\\\"url\\\":\\\"https:\\/\\/www.youtube.com\\/channel\\/UCUahHBzRfv4N5fvTy2UJ9qQ\\\",\\\"chanel_id\\\":\\\"UCUahHBzRfv4N5fvTy2UJ9qQ\\\"},\\\"video\\\":{\\\"title\\\":\\\"\\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0623\\u0631\\u0632 \\u0627\\u0644\\u064a\\u0648\\u0645  \\u0627\\u0646\\u0647\\u064a\\u0627\\u0631 \\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0631\\u0632 \\u0627\\u0644\\u0623\\u0628\\u064a\\u0636 \\u0648\\u0627\\u0644\\u0634\\u0639\\u064a\\u0631 \\u0648\\u0645\\u0641\\u0627\\u062c\\u0622\\u062a \\u062c\\u062f\\u064a\\u062f\\u0629\\\",\\\"link\\\":\\\"https:\\/\\/www.youtube.com\\/watch?v=dwb20yYQ-8s\\\",\\\"pubDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"author\\\":\\\"\\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"id\\\":\\\"yt:video:dwb20yYQ-8s\\\",\\\"isoDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"videoId\\\":\\\"dwb20yYQ-8s\\\"}}\"},{\"type\":\"button\",\"action_id\":\"zg27e\",\"text\":{\"type\":\"plain_text\",\"text\":\"Reject\",\"emoji\":true},\"style\":\"danger\",\"value\":\"{\\\"action\\\":\\\"reject\\\",\\\"file_id\\\":\\\"F09J58TBMMX\\\",\\\"file_url\\\":\\\"https:\\/\\/files.slack.com\\/files-pri\\/T0250NTDR7D-F09J58TBMMX\\/data_1759169332010.json\\\",\\\"file_permalink\\\":\\\"https:\\/\\/personal-tio3269.slack.com\\/files\\/U09HU9UHDED\\/F09J58TBMMX\\/data_1759169332010.json\\\",\\\"results\\\":[{\\\"type\\\":\\\"broad_white_rice\\\",\\\"min_price\\\":24500,\\\"max_price\\\":24800},{\\\"type\\\":\\\"small_white_rice\\\",\\\"min_price\\\":18600,\\\"max_price\\\":18800},{\\\"type\\\":\\\"broad_barely_rice\\\",\\\"min_price\\\":15600,\\\"max_price\\\":15800},{\\\"type\\\":\\\"small_barely_rice\\\",\\\"min_price\\\":12500,\\\"max_price\\\":12800}],\\\"source\\\":{\\\"_id\\\":\\\"68c0c9933137323932dc9cb9\\\",\\\"source_id\\\":\\\"modern_agriculture_youtube\\\",\\\"name_ar\\\":\\\"\\u0642\\u0646\\u0627\\u0629 \\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"name_en\\\":\\\"Modern Agriculture Channel\\\",\\\"type\\\":\\\"youtube\\\",\\\"url\\\":\\\"https:\\/\\/www.youtube.com\\/channel\\/UCUahHBzRfv4N5fvTy2UJ9qQ\\\",\\\"chanel_id\\\":\\\"UCUahHBzRfv4N5fvTy2UJ9qQ\\\"},\\\"video\\\":{\\\"title\\\":\\\"\\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0623\\u0631\\u0632 \\u0627\\u0644\\u064a\\u0648\\u0645  \\u0627\\u0646\\u0647\\u064a\\u0627\\u0631 \\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0631\\u0632 \\u0627\\u0644\\u0623\\u0628\\u064a\\u0636 \\u0648\\u0627\\u0644\\u0634\\u0639\\u064a\\u0631 \\u0648\\u0645\\u0641\\u0627\\u062c\\u0622\\u062a \\u062c\\u062f\\u064a\\u062f\\u0629\\\",\\\"link\\\":\\\"https:\\/\\/www.youtube.com\\/watch?v=dwb20yYQ-8s\\\",\\\"pubDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"author\\\":\\\"\\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"id\\\":\\\"yt:video:dwb20yYQ-8s\\\",\\\"isoDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"videoId\\\":\\\"dwb20yYQ-8s\\\"}}\"},{\"type\":\"button\",\"action_id\":\"sG37Y\",\"text\":{\"type\":\"plain_text\",\"text\":\"Edit\",\"emoji\":true},\"value\":\"{\\\"action\\\":\\\"edit\\\",\\\"file_id\\\":\\\"F09J58TBMMX\\\",\\\"file_url\\\":\\\"https:\\/\\/files.slack.com\\/files-pri\\/T0250NTDR7D-F09J58TBMMX\\/data_1759169332010.json\\\",\\\"file_permalink\\\":\\\"https:\\/\\/personal-tio3269.slack.com\\/files\\/U09HU9UHDED\\/F09J58TBMMX\\/data_1759169332010.json\\\",\\\"results\\\":[{\\\"type\\\":\\\"broad_white_rice\\\",\\\"min_price\\\":24500,\\\"max_price\\\":24800},{\\\"type\\\":\\\"small_white_rice\\\",\\\"min_price\\\":18600,\\\"max_price\\\":18800},{\\\"type\\\":\\\"broad_barely_rice\\\",\\\"min_price\\\":15600,\\\"max_price\\\":15800},{\\\"type\\\":\\\"small_barely_rice\\\",\\\"min_price\\\":12500,\\\"max_price\\\":12800}],\\\"source\\\":{\\\"_id\\\":\\\"68c0c9933137323932dc9cb9\\\",\\\"source_id\\\":\\\"modern_agriculture_youtube\\\",\\\"name_ar\\\":\\\"\\u0642\\u0646\\u0627\\u0629 \\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"name_en\\\":\\\"Modern Agriculture Channel\\\",\\\"type\\\":\\\"youtube\\\",\\\"url\\\":\\\"https:\\/\\/www.youtube.com\\/channel\\/UCUahHBzRfv4N5fvTy2UJ9qQ\\\",\\\"chanel_id\\\":\\\"UCUahHBzRfv4N5fvTy2UJ9qQ\\\"},\\\"video\\\":{\\\"title\\\":\\\"\\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0623\\u0631\\u0632 \\u0627\\u0644\\u064a\\u0648\\u0645  \\u0627\\u0646\\u0647\\u064a\\u0627\\u0631 \\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0631\\u0632 \\u0627\\u0644\\u0623\\u0628\\u064a\\u0636 \\u0648\\u0627\\u0644\\u0634\\u0639\\u064a\\u0631 \\u0648\\u0645\\u0641\\u0627\\u062c\\u0622\\u062a \\u062c\\u062f\\u064a\\u062f\\u0629\\\",\\\"link\\\":\\\"https:\\/\\/www.youtube.com\\/watch?v=dwb20yYQ-8s\\\",\\\"pubDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"author\\\":\\\"\\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"id\\\":\\\"yt:video:dwb20yYQ-8s\\\",\\\"isoDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"videoId\\\":\\\"dwb20yYQ-8s\\\"}}\"}]},{\"type\":\"section\",\"block_id\":\"LAOSJ\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_Automated with this <http:\\/\\/localhost:5678\\/workflow\\/IGreB8Q59lfgy9WR?utm_source=n8n-internal&amp;utm_medium=powered_by&amp;utm_campaign=n8n-nodes-base.slack_e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b|n8n workflow>_\",\"verbatim\":false}}]},\"state\":{\"values\":{}},\"response_url\":\"https:\\/\\/hooks.slack.com\\/actions\\/T0250NTDR7D\\/9597980005987\\/xbI2rrCJixYEpjsAkz42QpqQ\",\"actions\":[{\"action_id\":\"EMlX8\",\"block_id\":\"fqqdU\",\"text\":{\"type\":\"plain_text\",\"text\":\"Approve\",\"emoji\":true},\"value\":\"{\\\"action\\\":\\\"approve\\\",\\\"file_id\\\":\\\"F09J58TBMMX\\\",\\\"file_url\\\":\\\"https:\\/\\/files.slack.com\\/files-pri\\/T0250NTDR7D-F09J58TBMMX\\/data_1759169332010.json\\\",\\\"file_permalink\\\":\\\"https:\\/\\/personal-tio3269.slack.com\\/files\\/U09HU9UHDED\\/F09J58TBMMX\\/data_1759169332010.json\\\",\\\"results\\\":[{\\\"type\\\":\\\"broad_white_rice\\\",\\\"min_price\\\":24500,\\\"max_price\\\":24800},{\\\"type\\\":\\\"small_white_rice\\\",\\\"min_price\\\":18600,\\\"max_price\\\":18800},{\\\"type\\\":\\\"broad_barely_rice\\\",\\\"min_price\\\":15600,\\\"max_price\\\":15800},{\\\"type\\\":\\\"small_barely_rice\\\",\\\"min_price\\\":12500,\\\"max_price\\\":12800}],\\\"source\\\":{\\\"_id\\\":\\\"68c0c9933137323932dc9cb9\\\",\\\"source_id\\\":\\\"modern_agriculture_youtube\\\",\\\"name_ar\\\":\\\"\\u0642\\u0646\\u0627\\u0629 \\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"name_en\\\":\\\"Modern Agriculture Channel\\\",\\\"type\\\":\\\"youtube\\\",\\\"url\\\":\\\"https:\\/\\/www.youtube.com\\/channel\\/UCUahHBzRfv4N5fvTy2UJ9qQ\\\",\\\"chanel_id\\\":\\\"UCUahHBzRfv4N5fvTy2UJ9qQ\\\"},\\\"video\\\":{\\\"title\\\":\\\"\\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0623\\u0631\\u0632 \\u0627\\u0644\\u064a\\u0648\\u0645  \\u0627\\u0646\\u0647\\u064a\\u0627\\u0631 \\u0623\\u0633\\u0639\\u0627\\u0631 \\u0627\\u0644\\u0631\\u0632 \\u0627\\u0644\\u0623\\u0628\\u064a\\u0636 \\u0648\\u0627\\u0644\\u0634\\u0639\\u064a\\u0631 \\u0648\\u0645\\u0641\\u0627\\u062c\\u0622\\u062a \\u062c\\u062f\\u064a\\u062f\\u0629\\\",\\\"link\\\":\\\"https:\\/\\/www.youtube.com\\/watch?v=dwb20yYQ-8s\\\",\\\"pubDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"author\\\":\\\"\\u0627\\u0644\\u0632\\u0631\\u0627\\u0639\\u0629 \\u0627\\u0644\\u062d\\u062f\\u064a\\u062b\\u0629\\\",\\\"id\\\":\\\"yt:video:dwb20yYQ-8s\\\",\\\"isoDate\\\":\\\"2025-09-29T04:00:58.000Z\\\",\\\"videoId\\\":\\\"dwb20yYQ-8s\\\"}}\",\"style\":\"primary\",\"type\":\"button\",\"action_ts\":\"1759169752.276018\"}]}"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/0cf71861-712a-4764-aadb-b76f81486167",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set rejected source data": {
+      "main": [
+        [
+          {
+            "node": "Insert Rejected Video Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set prices data": {
+      "main": [
+        [
+          {
+            "node": "Insert Prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Prices": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set processed source": {
+      "main": [
+        [
+          {
+            "node": "Insert Processed Video Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Processed Video Source": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Set slack modal data": {
+      "main": [
+        [
+          {
+            "node": "Send slack modal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map response": {
+      "main": [
+        [
+          {
+            "node": "Set slack modal data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get file content": {
+      "main": [
+        [
+          {
+            "node": "Map response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Payload": {
+      "main": [
+        [
+          {
+            "node": "Switch payload type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch payload type": {
+      "main": [
+        [
+          {
+            "node": "Respond to actions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to view",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract action values": {
+      "main": [
+        [
+          {
+            "node": "Switch action value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch action value": {
+      "main": [
+        [
+          {
+            "node": "Set prices data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set processed source",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get file content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract modal values": {
+      "main": [
+        [
+          {
+            "node": "Set prices data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set processed source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to actions": {
+      "main": [
+        [
+          {
+            "node": "Extract action values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to view": {
+      "main": [
+        [
+          {
+            "node": "Extract modal values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a message": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Clean slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Rejected Video Source": {
+      "main": [
+        [
+          {
+            "node": "Clean slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean slack": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cfb7b9c8-9b90-4821-9c9c-b1825785aa81",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "KLYEXkmYeJH4Gdlb",
+  "tags": []
+}

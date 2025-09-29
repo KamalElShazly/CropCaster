@@ -1,0 +1,250 @@
+{
+  "name": "Send results to slack",
+  "nodes": [
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09HB3US5J9",
+          "mode": "list",
+          "cachedResultName": "crop-caster"
+        },
+        "messageType": "block",
+        "blocksUi": "={{ $json }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1056,
+        112
+      ],
+      "id": "69d03f73-c94e-46a0-8ff2-82c0e650b990",
+      "name": "Send a message",
+      "webhookId": "13cf137c-0f88-4553-b42d-5e11dcb97b87",
+      "credentials": {
+        "slackApi": {
+          "id": "9ZfOUYa7935pkuZq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "results",
+              "type": "array"
+            },
+            {
+              "name": "source",
+              "type": "object"
+            },
+            {
+              "name": "video",
+              "type": "object"
+            },
+            {
+              "name": "text"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        112
+      ],
+      "id": "bb55151a-db50-4f32-b3f8-08f99fa4e594",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "options": {
+          "channelId": "C09HB3US5J9"
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        112
+      ],
+      "id": "7e3b1325-0aa7-4980-af14-37ff385bdd3d",
+      "name": "Upload Results",
+      "webhookId": "b7de9f06-be0e-4664-9c1e-71ecb5eeb0c6",
+      "credentials": {
+        "slackApi": {
+          "id": "9ZfOUYa7935pkuZq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const jsonString = JSON.stringify($json, null, 2);\nconst buffer = Buffer.from(jsonString, \"utf8\");\nconst timestamp = Date.now();\nconst fileName = `data_${timestamp}.json`;\n\nreturn [\n  {\n    json: {},\n    binary: {\n      data: {\n        data: buffer.toString('base64'),\n        mimeType: 'application/json',\n        fileName: fileName\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        112
+      ],
+      "id": "8f1cedb8-5b1c-45a7-af68-f6de0b5154c2",
+      "name": "Create results file"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $('When Executed by Another Workflow').first().json;\n\nconst data = {\n  file_id: $input.first().json.id,\n  file_url: $input.first().json.url_private,\n  file_permalink: $input.first().json.permalink,\n  results: input.results,\n  source: input.source,\n  video: input.video,\n};\n\n// Prepare payload for Approve / Reject / Edit buttons\nconst approvePayload = { action: 'approve', ...data };\nconst rejectPayload = { action: 'reject', ...data };\nconst editPayload = { action: 'edit', ...data };\n\n// Build the Slack Block UI\nconst blocks = [\n  {\n    type: \"actions\",\n    elements: [\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Approve\" },\n        style: \"primary\",\n        value: JSON.stringify(approvePayload)\n      },\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Reject\" },\n        style: \"danger\",\n        value: JSON.stringify(rejectPayload)\n      },\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Edit\" },\n        value: JSON.stringify(editPayload)\n      }\n    ]\n  }\n];\n\nreturn [{ \"json\": { blocks } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        112
+      ],
+      "id": "16c7f6fb-1c5b-4266-a25f-b0b798cc9369",
+      "name": "Set slack message"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        112
+      ],
+      "id": "20bc55c0-ba1f-4342-92d4-4f71778f8459",
+      "name": "Wait",
+      "webhookId": "0c1edffe-f5fa-42e6-b37f-ebda30ea2a7c"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "results": [
+            {
+              "type": "broad_white_rice",
+              "min_price": 24700,
+              "max_price": 25000
+            },
+            {
+              "type": "small_white_rice",
+              "min_price": 18700,
+              "max_price": 19000
+            },
+            {
+              "type": "broad_barely_rice",
+              "min_price": 15200,
+              "max_price": 15500
+            },
+            {
+              "type": "small_barely_rice",
+              "min_price": 12200,
+              "max_price": 12600
+            }
+          ],
+          "source": {
+            "_id": "68c0c9933137323932dc9cb9",
+            "source_id": "modern_agriculture_youtube",
+            "name_ar": "قناة الزراعة الحديثة",
+            "name_en": "Modern Agriculture Channel",
+            "type": "youtube",
+            "url": "https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ",
+            "chanel_id": "UCUahHBzRfv4N5fvTy2UJ9qQ"
+          },
+          "video": {
+            "title": "أسعار الأرز الشعير اليوم | تحديث يومي لأسعار الأرز الأبيض والمخلفات في مصر",
+            "link": "https://www.youtube.com/watch?v=3taU3mW3FDE",
+            "pubDate": "2025-09-26T04:00:05.000Z",
+            "author": "الزراعة الحديثة",
+            "id": "yt:video:3taU3mW3FDE",
+            "isoDate": "2025-09-26T04:00:05.000Z",
+            "videoId": "3taU3mW3FDE"
+          },
+          "transcript": "اهلا بكم بفيديو جديد على قناه الزراعه الحديثه لو كنت من الناس اللي بيهتموا بمعرفه اسعار الرز الشعير النهارده واسعار الرز الابيض والمخلفات فانت دلوقتي في المكان الصح السوق النهارده بيتغير من يوم للثاني والاسعار بتتاثر بعوامل كتيره زي العرض والطلب والتصدير والموسم الزراعي نفسه ايام الحصاد وده بيخلي متابعه اسعار الرز ضروريه لكل تاجر او مستهلك او حتى صاحب مطعم عايز يعرف تكلفته صح النهارده جايب لكم احدث التفاصيل عن اسعار الرز الشعير العريض والرفيع واسعار الرز الابيض المتعبي فيه شكاير 25 كيلو و50 كيلو وكمان اسعار المخلفات زي الكونه وكسر الرز والسلص المطحون المعلومات دي هتساعدكم تعرفوا اخر التطورات وتقدروا تحددوا التوقيت المناسب للشراء او البيع اللي هيميز فيديو النهارده اننا مش هنتكلم عن ارقامه بس لكن كمان هنوضح لكم اسعار الرز الابيض اليوم مقارنه بال الرز الشعير وكمان ازاي الفرق بين الرز الشعير والرز الرفيع بياثر على السعر النهائي للمستهلك وهنوضح لكم كمان حركه السوق في المضارب المختلفه واللي ممكن تلاقي فرق من 200 ل 400 جنيه في سعر الطن على حسب مكان التنفيذ وكمان مش هنسيب موضوع مخلفات الرز اللي ليها دور كبير سواء في التغذيه الحيوانيه او الصناعيه كل ده باسلوب سهل وبسيط علشان توصل لك المعلومه كامله من غير تعقيد يلا بينا نبدا التقرير بالتفصيل ونشوف اخر اخبار الاسعار النهارده بالنسبه لاسعار الرز الابيض النهارده بتعتبر من اهم المؤشرات اللي بيستند عليها المستهلك والتاجر في نفس الوقت النهارده الاسواق بتشهد حركه كبيره في العرض والطلب الاسعار النهارده بتتراوح من 24700 جنيه ل 25000 جنيه للطن بالنسبه للرز العريض كسر من 8 ل 10% وده بيديني صره واضحه ان الاسعار مستقره نسبيا مقارنه بالايام اللي فاتت اما بالنسبه للرز رفيع فاسعاره النهارده تنفيذ بتتراوح ما بين 18700 جنيه و19000 جنيه الطن من ارض المضرب وده بيعكس ان في فرق واضح بين العريض والرفيع على حسب طبعا الجوده وحجم الحبه الفرق بين الرز الابيض العريض والرز الابيض الرفيع مش بس فرق في الشكل لكنه فرق كمان في الجوده والطعم والتفضيلات الاستهلاكيه العريض بيتميز بنسبه تصافئ اعلى وبيعتبر مفضل للمطاعم والفنادق اللي بتهتم بالشكل النهائي للوجبه اما الرز الزبيض الرفيع فبيكون ارخص نسبيا وبيستخدم بكثره في البيوت المصريه نظرا لسعره المناسب وطبعا من الجدير بالذكر ان الاسعار بتختلف من مضرب للثاني بسبب تكلفه التشغيل وجوده المعدات وطريقه التعبئه وده بيفسر ليه ممكن نلاقي فرق سعر من 200 جنيه ل 400 جنيه في سعر الطن وعشان كده معرفت اسعار الرز الابيض اليوم بشكل دقيق بيخلي التاجر والمستهلك عندهم رؤيه واضحه للتخطيط سواء للشراء او للتخزين. بالنسبه بقى لاسعار الرز الشعير لما نيجي نتكلم عن الاسعار لازم نفرق بين الشعير العريض والشعير الرفيع. النهارده الاسعار بتشير الى ان طن الرز الشعير العريض بيتراوح من 15200 جنيه ل 15300 جنيه من على ارضه. اما وصل للمضرب من 15400 جنيه ل 15500 جنيه وبالنسبه لاسعار الرز الشعير الرفيع السعر بيتراوح ما بين 12200 جنيه ل 12300 جنيه من على ارضه اما وصال للمضرب من 12500 جنيه ل 12600 جنيه للطن الفرق الكبير ده بيخلينا نلاحظ ان الرفيع بيكون يكون خيار اقتصادي للتجار اللي بيستهدفوا شريحه المستهلكين اللي بيدوروا على سعر اقل. بالنسبه بقى لاسعار مخلفات الرز مخلفات الرز النهارده بقت عنصر اساسي في السوق المصري مش بس منتجانبي او ثانوي. لو بصينا على اسعار السرس المطحون هنلاقي ان طن السرس المطحون من ارض المطرب بيتراوح من 2000 جنيه ل 2200 جنيه. اما سعر الكونه فاسعارها بتتراوح ما بين 13000 جنيه ل 13200 جنيه للطن وكسر الرز الناعم اللي بيستخدم بشكل كبير في الصناعات الغذائيه والعلف الحيواني بيتراوح سعره النهارده من 13500 جنيه ل 13700 جنيه للطن الارقام دي بتبين ان اسعار مخلفات الرز بقت ليها وزن كبير في الاقتصاد الزراعي ومش مجرد منتج ثانوي وناتج من عمليه التبييض والطحن بالعكس في مصانع بتعتمد بشكل اساسي على المخلفات دي في انتاج اعلاف او منتجات غذائيه الطلب على المخلفات والرز بيتاثر بشكل مباشر بقطاعين رئيسيين تربيه المواشي والدواجن والصناعات الغذائيه على سبيل المثال السرس المطحون بيعتبر من المكونات الاساسيه في الاعلاف لا غنى عنه بالطاقه وسهل الحضن اما الكونه فهي بتستخدم بكثره في خلطات العلف المتوازنه وكسر الرز الناعم بيلاقي اقبال في الصناعات الغذائيه زي تصنيع الدقيق المخلوط او المقرمشات ومن هنا بقى بيبان ان متابعه اسعار مخلفات الرز مش بس للتجار الكبار لكن كمان لصغار المربيين والمزارعين اللي بيحتاجوا يحددوا تكلفه اعلافهم وده بيؤكد ان قطاع الرز مش بس بيعتمد على الشعير والرز الابيض لكن كمان على المنتجات الثانويه اللي لها دور اقتصادي كبير. لو جينا نبص بقى على توقعات اسعار الرز الشعير والرز الابيض خلال الفتره القادمه لو بصينا على السوق دلوقتي هنلاقي ان في حاله من الاستقرار النسبي في اسرار الرز الشعير والرز اللبيض. لكن السؤال المهم بقى هل الاستقرار ده هيستمر؟ الواقع بيقول ان الاسعار بتتاثر بعده عوامل موسم الحصاد وحجم التصدير وحجم المخزون المتاح مع بدايه الموسم الجديد بيكون المعروض كبير وبالتالي الاسعار بتنزل شويه لكن مع زياده الطلب سواء داخلي او خارجي بيحصل ارتفاع تدريجي وده معناه ان التاجر او المستهلك لازم يكون عنده رؤيه للتوقعات القادمه علشان يحدد التوقيت المناسب للشراء او التخزين. التوقعات بتشير الى ان اسعار الرز الابيض ممكن تشهد بعض الارتفاعات مع زياده التصدير للخارج. اما الرز الشعير فبيحددوا الطلب عليه محليا بشكل كبير. لكن لو الحكومه وفرت كميات كافيه في السوق وسمحت بالاستيراد عند الحاجه الاسعار ممكن تفضل مستقره وده بياكد ان متابعه الاخبار الرسميه وتقارير الاسواق حاجه اساسيه علشان نقدر نعرف مستقبل الاسعار للرز الشعير والرز الابيض وفي كل الاحوال النصيحه للتاجر والمستهلك هي متابعه الاسعار يوميا واتخاذ القرارات بناء على المعلومات المحدثه كده وصلنا لنهايه حلقتنا والسلام عليكم ورحمه الله وبركاته."
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Create results file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Upload Results": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create results file": {
+      "main": [
+        [
+          {
+            "node": "Upload Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set slack message": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Set slack message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c8e5d62c-64c1-4d79-b27b-2d4bbb3f5c84",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "IGreB8Q59lfgy9WR",
+  "tags": []
+}
