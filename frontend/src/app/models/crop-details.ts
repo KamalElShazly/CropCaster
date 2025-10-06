@@ -3,8 +3,8 @@ export class CropDetails {
     public source_id: string,
     public crop_category_id: string,
     public crop_type_id: string,
-    public video_published_date: Date,
-    public video_processed_date: Date,
+    public publish_date: Date,
+    public processing_date: Date,
     public min_price: number,
     public max_price: number
   ) {}

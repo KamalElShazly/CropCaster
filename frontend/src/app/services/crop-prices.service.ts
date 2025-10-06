@@ -24,8 +24,8 @@ export class CropPricesService {
                 e.source_id,
                 e.crop_category_id,
                 e.crop_type_id,
-                new Date(e.video_published_date),
-                new Date(e.video_processed_date),
+                new Date(e.publish_date),
+                new Date(e.processing_date),
                 e.min_price,
                 e.max_price
               )

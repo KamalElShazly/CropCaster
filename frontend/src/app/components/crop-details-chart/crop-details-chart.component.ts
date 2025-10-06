@@ -120,12 +120,11 @@ export class CropDetailsChartComponent implements OnInit, OnChanges {
 
     // Sort data by date
     const sortedData = [...this.cropData].sort(
-      (a, b) =>
-        new Date(a.video_published_date).getTime() - new Date(b.video_published_date).getTime()
+      (a, b) => new Date(a.publish_date).getTime() - new Date(b.publish_date).getTime()
     );
 
     const labels = sortedData.map((item) => {
-      const date = new Date(item.video_published_date);
+      const date = new Date(item.publish_date);
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
     const avgPrices = sortedData.map((item) => item.avg_price);

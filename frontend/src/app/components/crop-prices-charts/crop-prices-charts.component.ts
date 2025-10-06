@@ -73,9 +73,7 @@ export class CropPricesChartsComponent implements OnChanges {
             .sort(([a], [b]) => this.sortCropTypes(a, b))
             .map(([typeId, data]) => ({
               typeId,
-              data: data.sort(
-                (a, b) => a.video_published_date.getTime() - b.video_published_date.getTime()
-              ),
+              data: data.sort((a, b) => a.publish_date.getTime() - b.publish_date.getTime()),
             })),
         })),
     }));
