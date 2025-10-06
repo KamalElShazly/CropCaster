@@ -47,8 +47,8 @@
             "source_id": "={{ $json.source_id }}",
             "crop_category_id": "={{ $json.crop_category_id }}",
             "crop_type_id": "={{ $json.crop_type_id }}",
-            "video_published_date": "={{ $json.publish_date }}",
-            "video_processed_date": "={{ $json.processing_date }}"
+            "publish_date": "={{ $json.publish_date }}",
+            "processing_date": "={{ $json.processing_date }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -98,22 +98,24 @@
               "type": "number"
             },
             {
-              "id": "video_published_date",
-              "displayName": "video_published_date",
+              "id": "publish_date",
+              "displayName": "publish_date",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string"
+              "type": "string",
+              "removed": false
             },
             {
-              "id": "video_processed_date",
-              "displayName": "video_processed_date",
+              "id": "processing_date",
+              "displayName": "processing_date",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string"
+              "type": "string",
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -1014,7 +1016,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "25cbd9be-4649-4251-84cb-83042007280b",
+  "versionId": "e61ba084-624d-4b53-bc54-a44ea1ffc062",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"

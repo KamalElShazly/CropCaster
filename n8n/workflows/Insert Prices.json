@@ -23,10 +23,10 @@
               "type": "number"
             },
             {
-              "name": "video_published_date"
+              "name": "publish_date"
             },
             {
-              "name": "video_processed_date"
+              "name": "processing_date"
             }
           ]
         }
@@ -44,9 +44,9 @@
       "parameters": {
         "operation": "insert",
         "collection": "prices",
-        "fields": "source_id,crop_category_id,crop_type_id,min_price,max_price,video_published_date,video_processed_date",
+        "fields": "source_id,crop_category_id,crop_type_id,min_price,max_price,publish_date,processing_date",
         "options": {
-          "dateFields": "video_published_date,video_processed_date"
+          "dateFields": "publish_date,processing_date"
         }
       },
       "type": "n8n-nodes-base.mongoDb",
@@ -97,7 +97,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "4333c8db-01bc-4a4f-8374-07ce07ded4e5",
+  "versionId": "13c10235-4d89-44ea-9ac0-8b9f8c30a350",
   "meta": {
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
   },
