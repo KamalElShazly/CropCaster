@@ -1,0 +1,297 @@
+{
+  "name": "News Source Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.source.url }}",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={{ JSON.stringify($json.source.options.query_params) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        -48
+      ],
+      "id": "e9973fdf-2be2-45a9-90d9-3a72ff314d66",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "urls",
+              "cssSelector": ".jeg_main_content  h3.jeg_post_title a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            },
+            {
+              "key": "titles",
+              "cssSelector": ".jeg_main_content  h3.jeg_post_title a",
+              "returnArray": true
+            },
+            {
+              "key": "publish_dates",
+              "cssSelector": ".jeg_main_content .jeg_meta_date a",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "cleanUpText": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        -48
+      ],
+      "id": "4ebf6457-26e5-4d5f-8163-7619763bf72d",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "source",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -272,
+        -48
+      ],
+      "id": "29a51930-15fc-4e4f-bc37-62ca9d3909f5",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "NmCRSDodT0Bh6Zva",
+          "mode": "list",
+          "cachedResultName": "News Post Handler"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source }}",
+            "post": "={{ $json.post }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "post",
+              "displayName": "post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        -48
+      ],
+      "id": "7e3168a5-366e-42e9-92f2-bc97f580a207",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.source.source_id }}",
+                    "rightValue": "almolakhasalektesady_news",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "da9fc71c-b61a-4de3-ae35-23552c7dda83"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -64,
+        -48
+      ],
+      "id": "297ff548-928c-4426-a644-beab83d9351e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urls = $input.first().json.urls || [];\nconst titles = $input.first().json.titles || [];\nconst publishDates = $input.first().json.publish_dates || [];\nconst output = [];\n\nfor (let i = 0; i < Math.min(urls.length, titles.length); i++) {\n  output.push({\n    json: {\n      \"url\": encodeURI(decodeURI(urls[i])),\n      \"title\": titles[i],\n      \"publish_date\": publishDates[i]\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -48
+      ],
+      "id": "71256fc9-2e06-46ca-8cbd-83266848caa1",
+      "name": "Set post data"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"source\": {{ $('When Executed by Another Workflow').item.json.source }},\n  \"post\": {{ $json }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        -48
+      ],
+      "id": "8115e661-eb5c-442a-afde-5e4060031300",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "source": {
+            "_id": "68ddac7e37f50d8e384ce1ed",
+            "source_id": "almolakhasalektesady_news",
+            "name_ar": "موقع الملخص الاقتصادي",
+            "name_en": "Almolakhas Alektesady News",
+            "type": "news",
+            "url": "https://almolakhasalektesady.com",
+            "options": {
+              "query_params": {
+                "s": "أرز"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Set post data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set post data": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a40f33dc-136d-4854-99b7-cdcaf418f956",
+  "meta": {
+    "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
+  },
+  "id": "EDlsiXGJWfgfDeWK",
+  "tags": []
+}

@@ -4,7 +4,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are an assistant that extracts crop prices from Arabic text.\nOnly extract prices for the following crops:\n- شعير عريض → \"broad_barely_rice\"\n- شعير رفيع → \"small_barely_rice\"\n- أرز أبيض عريض → broad_white_rice\n- أرز أبيض رفيع → small_white_rice\n\nRead the transcript and output a JSON array where each object has:\nRead the transcript and output a JSON object with:\n- \"confidence\": confidence score (0-100) - how sure you are this contains real price data\n- \"has_prices\": boolean - whether actual prices were found\n- \"data\": array of price objects (only if has_prices is true)\n\n- \"type\": the crop type (e.g., \"broad_barely_rice\", \"small_barely_rice\")\n- \"min_price\": minimum price\n- \"max_price\": maximum price\n\nIf a price is below 10000, assume it is missing trailing zeros and multiply it to match realistic crop prices. For example, 13 → 13000, 25 → 25000, 220 → 22000, 1300 → 130000.\n\nOnly return valid JSON, no extra text.\n\nTranscript:\n{{ $json.text }}",
+        "text": "=You are an assistant that extracts crop prices from Arabic text (transcripts, articles, or reports).\n\nOnly extract prices for the following crops:\n- شعير عريض → \"broad_barely_rice\"\n- شعير رفيع → \"small_barely_rice\"\n- أرز أبيض عريض → \"broad_white_rice\"\n- أرز أبيض رفيع → \"small_white_rice\"\n\nOutput a single JSON object with this structure:\n\n{\n  \"confidence\": <number 0-100>,\n  \"has_prices\": <true|false>,\n  \"data\": [\n    {\n      \"type\": \"<crop type>\",\n      \"min_price\": <number>,\n      \"max_price\": <number>\n    }\n  ]\n}\n\nNormalization rules:\n- Ignore irrelevant numbers (not linked to crops).\n- Valid crop prices are expected to be between 8,000 and 50,000 EGP per ton.\n- If a number is much smaller (e.g. 13, 250, 2200), multiply by powers of 10 until it falls inside the 8,000–50,000 range.\n- If a number is much larger (e.g. 200000, 2000000), divide by powers of 10 until it falls inside the 8,000–50,000 range.\n- Always adjust numbers so they fall into the realistic 8,000–50,000 range.\n- If only one price is found for a crop, set both min_price and max_price to that value.\n- If a range is given (e.g. \"من 13000 إلى 13500\"), use both values.\n- If min_price > max_price, swap them.\n- If no valid crop prices are found, return:\n  { \"confidence\": 0, \"has_prices\": false, \"data\": [] }\n\nOnly return valid JSON. Do not include explanations or extra text.\n\nText:\n{{ $json.text }}",
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
@@ -116,7 +116,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "150ef410-ec00-4b1e-b1ba-7ff4c28c9a75",
+  "versionId": "78dfba4f-68ae-40ce-b45b-9352fc14ee9a",
   "meta": {
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
   },

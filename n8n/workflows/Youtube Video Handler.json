@@ -12,30 +12,8 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "position": [
         -1200,
-        32
+        48
       ]
-    },
-    {
-      "parameters": {
-        "collection": "processed_sources",
-        "options": {},
-        "query": "={\n  \"source_id\": \"{{ $json.source.source_id }}\",\n  \"video_id\": \"{{ $json.video.videoId }}\"\n}"
-      },
-      "type": "n8n-nodes-base.mongoDb",
-      "typeVersion": 1.2,
-      "position": [
-        -752,
-        128
-      ],
-      "id": "4f1e0218-f458-4af7-8cea-3b45e46e8982",
-      "name": "Find source in processed sources",
-      "alwaysOutputData": true,
-      "credentials": {
-        "mongoDb": {
-          "id": "atuQlsTpZSEKAHMP",
-          "name": "MongoDB account"
-        }
-      }
     },
     {
       "parameters": {
@@ -70,17 +48,6 @@
       ],
       "id": "ff91b2d3-24f2-4696-9486-4dbeac1e684e",
       "name": "Check source is valid"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -512,
-        32
-      ],
-      "id": "c92d0934-5b29-46d1-81cf-043e06768c4e",
-      "name": "Merge database results"
     },
     {
       "parameters": {
@@ -144,28 +111,7 @@
     },
     {
       "parameters": {
-        "collection": "rejected_sources",
-        "options": {},
-        "query": "={\n  \"source_id\": \"{{ $json.source.source_id }}\",\n  \"video_id\": \"{{ $json.video.videoId }}\"\n}"
-      },
-      "type": "n8n-nodes-base.mongoDb",
-      "typeVersion": 1.2,
-      "position": [
-        -752,
-        -64
-      ],
-      "id": "2798db6b-1fed-46c9-8c43-78f2368acc5d",
-      "name": "Find source in rejected sources",
-      "credentials": {
-        "mongoDb": {
-          "id": "atuQlsTpZSEKAHMP",
-          "name": "MongoDB account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const json = $(\"Set Video Data\").first().json;\nreturn [\n  {\n    source_id: json.source.source_id,\n    video_id: json.video.videoId,\n    video_published_date: json.video.pubDate,\n    video_rejected_date: new Date().toISOString(),\n  },\n];\n"
+        "jsCode": "const json = $(\"Set Video Data\").first().json;\nreturn [\n  {\n    source_id: json.source.source_id,\n    video_id: json.video.videoId,\n    publish_date: json.video.pubDate,\n    processing_date: new Date().toISOString(),\n    status: 'rejected'\n  },\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -194,17 +140,18 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "mqiTJQv6hDPLS6ny",
+          "value": "l3Ot7Z5JeVUM2j1R",
           "mode": "list",
-          "cachedResultName": "Insert Rejected Video Source"
+          "cachedResultName": "Insert Processed Source"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
             "source_id": "={{ $json.source_id }}",
             "video_id": "={{ $json.video_id }}",
-            "video_published_date": "={{ $json.video_published_date }}",
-            "video_rejected_date": "={{ $json.video_rejected_date }}"
+            "publish_date": "={{ $json.publish_date }}",
+            "processing_date": "={{ $json.processing_date }}",
+            "status": "={{ $json.status }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -229,8 +176,8 @@
               "removed": false
             },
             {
-              "id": "video_published_date",
-              "displayName": "video_published_date",
+              "id": "post_url",
+              "displayName": "post_url",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -239,8 +186,28 @@
               "removed": false
             },
             {
-              "id": "video_rejected_date",
-              "displayName": "video_rejected_date",
+              "id": "publish_date",
+              "displayName": "publish_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "processing_date",
+              "displayName": "processing_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -276,7 +243,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "text": "={{ $json.stdout }}"
+            "text": "={{ $json.transcript }}"
           },
           "matchingColumns": [
             "text"
@@ -303,8 +270,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        912,
-        -144
+        1312,
+        -224
       ],
       "id": "17b1353c-203e-4cd8-ac14-6601f15f4fbe",
       "name": "Extract Prices"
@@ -317,7 +284,7 @@
       "typeVersion": 2,
       "position": [
         -992,
-        32
+        48
       ],
       "id": "155d1400-d91b-433c-bbd6-f073718141bb",
       "name": "Set Video Data"
@@ -329,8 +296,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1760,
-        -160
+        2160,
+        -240
       ],
       "id": "bd6f94e2-05d9-49a3-998f-2a1a17f6abdf",
       "name": "Wait",
@@ -347,7 +314,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "text": "={{ $json.transcript }}",
+            "text": "={{ $json.text }}",
             "results": "={{ $json.results }}",
             "video": "={{ $json.video }}",
             "source": "={{ $json.source }}"
@@ -384,6 +351,16 @@
               "removed": false
             },
             {
+              "id": "post",
+              "displayName": "post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
               "id": "text",
               "displayName": "text",
               "required": false,
@@ -401,8 +378,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1536,
-        -160
+        1936,
+        -240
       ],
       "id": "12268253-a536-4395-ba64-eb63bf569191",
       "name": "Send results to slack"
@@ -410,13 +387,13 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const transcript = $('Get Transcript').item.json.stdout;\nconst results = $json.data;\nconst videoData = $(\"Set Video Data\").item.json;\n\nreturn {\n  \"results\": results,\n  \"source\": videoData.source,\n  \"video\": videoData.video,\n  \"transcript\": transcript,\n};"
+        "jsCode": "const text = $('Get Transcript').item.json.stdout;\nconst results = $json.data;\nconst videoData = $(\"Set Video Data\").item.json;\n\nreturn {\n  \"results\": results,\n  \"source\": videoData.source,\n  \"video\": videoData.video,\n  \"post\": null,\n  \"text\": text,\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1360,
-        -160
+        1760,
+        -240
       ],
       "id": "c5418efa-5dff-4763-8399-c2865279ed17",
       "name": "Set slack data"
@@ -449,38 +426,117 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1120,
-        -144
+        1520,
+        -224
       ],
       "id": "681fe9ac-ba07-435c-8b08-64872d7849f9",
       "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "return JSON.parse($input.first().json.stdout);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        -144
+      ],
+      "id": "e664dba5-ee4b-4d5d-a40f-e4697f1d8830",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "39fd3644-8187-455e-8fd0-80bc4cefdb39",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -144
+      ],
+      "id": "255cab34-1b81-40d8-b2be-c4347b039d35",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "collection": "processed_sources",
+        "options": {},
+        "query": "={\n  \"source_id\": \"{{ $json.source.source_id }}\",\n  \"post_url\": \"{{ $json.post.url }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        48
+      ],
+      "id": "ce895418-cc5b-4d35-99b3-ca248d95274f",
+      "name": "Find source in processed sources1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "atuQlsTpZSEKAHMP",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8278becc-21a3-4bef-a9ae-a7f9111e4385",
+              "leftValue": "={{ $json.source._id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -544,
+        48
+      ],
+      "id": "5f070987-58e7-4704-a74d-deb5101956ec",
+      "name": "Check source is valid1"
     }
   ],
   "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "source": {
-            "_id": "68c0c9933137323932dc9cb9",
-            "source_id": "modern_agriculture_youtube",
-            "name_ar": "قناة الزراعة الحديثة",
-            "name_en": "Modern Agriculture Channel",
-            "type": "youtube",
-            "url": "https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ",
-            "chanel_id": "UCUahHBzRfv4N5fvTy2UJ9qQ"
-          },
-          "video": {
-            "title": "أسعار الأرز الشعير اليوم | تحديث يومي لأسعار الأرز الأبيض والمخلفات في مصر",
-            "link": "https://www.youtube.com/watch?v=3taU3mW3FDE",
-            "pubDate": "2025-09-26T04:00:05.000Z",
-            "author": "الزراعة الحديثة",
-            "id": "yt:video:3taU3mW3FDE",
-            "isoDate": "2025-09-26T04:00:05.000Z",
-            "videoId": "3taU3mW3FDE"
-          }
-        }
-      }
-    ],
     "Extract Prices": [
       {
         "json": {
@@ -510,6 +566,30 @@
           ]
         }
       }
+    ],
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "source": {
+            "_id": "68be34b7640d69967ca3e81b",
+            "source_id": "reda_meshref_youtube",
+            "name_ar": "قناة رضا مشرف",
+            "name_en": "Reda Meshref Channel",
+            "type": "youtube",
+            "url": "https://www.youtube.com/channel/UCZHHlx_dBZIl-R7ZE2WxFWw",
+            "chanel_id": "UCZHHlx_dBZIl-R7ZE2WxFWw"
+          },
+          "video": {
+            "title": "اليوم السبت 2025/10/4 اسعار الارز الشعير والأبيض والمخلفات",
+            "link": "https://www.youtube.com/shorts/ljWNKv90K3w",
+            "pubDate": "2025-10-04T03:34:51.000Z",
+            "author": " رضا مشرف لاسعار الارز والمخلفات ",
+            "id": "yt:video:ljWNKv90K3w",
+            "isoDate": "2025-10-04T03:34:51.000Z",
+            "videoId": "ljWNKv90K3w"
+          }
+        }
+      }
     ]
   },
   "connections": {
@@ -524,17 +604,6 @@
         ]
       ]
     },
-    "Find source in processed sources": {
-      "main": [
-        [
-          {
-            "node": "Merge database results",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
     "Check source is valid": {
       "main": [
         [
@@ -545,17 +614,6 @@
           }
         ],
         []
-      ]
-    },
-    "Merge database results": {
-      "main": [
-        [
-          {
-            "node": "Check video validity",
-            "type": "main",
-            "index": 0
-          }
-        ]
       ]
     },
     "Calculate Relevance": {
@@ -598,17 +656,6 @@
         ]
       ]
     },
-    "Find source in rejected sources": {
-      "main": [
-        [
-          {
-            "node": "Merge database results",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Set rejected source data": {
       "main": [
         [
@@ -624,7 +671,7 @@
       "main": [
         [
           {
-            "node": "Extract Prices",
+            "node": "Code",
             "type": "main",
             "index": 0
           }
@@ -651,12 +698,7 @@
       "main": [
         [
           {
-            "node": "Find source in rejected sources",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Find source in processed sources",
+            "node": "Find source in processed sources1",
             "type": "main",
             "index": 0
           }
@@ -702,13 +744,64 @@
           }
         ]
       ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Extract Prices",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find source in processed sources1": {
+      "main": [
+        [
+          {
+            "node": "Check source is valid1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check source is valid1": {
+      "main": [
+        [
+          {
+            "node": "Check video validity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ac3b3182-de8d-4ba2-8fc2-dccf4cedebd2",
+  "versionId": "6837cb5c-4f09-4b07-9ac8-99a0aace72be",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"

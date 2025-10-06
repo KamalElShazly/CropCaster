@@ -47,6 +47,10 @@
               "type": "object"
             },
             {
+              "name": "post",
+              "type": "object"
+            },
+            {
               "name": "text"
             }
           ]
@@ -99,7 +103,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $('When Executed by Another Workflow').first().json;\n\nconst data = {\n  file_id: $input.first().json.id,\n  file_url: $input.first().json.url_private,\n  file_permalink: $input.first().json.permalink,\n  results: input.results,\n  source: input.source,\n  video: input.video,\n};\n\n// Prepare payload for Approve / Reject / Edit buttons\nconst approvePayload = { action: 'approve', ...data };\nconst rejectPayload = { action: 'reject', ...data };\nconst editPayload = { action: 'edit', ...data };\n\n// Build the Slack Block UI\nconst blocks = [\n  {\n    type: \"actions\",\n    elements: [\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Approve\" },\n        style: \"primary\",\n        value: JSON.stringify(approvePayload)\n      },\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Reject\" },\n        style: \"danger\",\n        value: JSON.stringify(rejectPayload)\n      },\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Edit\" },\n        value: JSON.stringify(editPayload)\n      }\n    ]\n  }\n];\n\nreturn [{ \"json\": { blocks } }];"
+        "jsCode": "const input = $('When Executed by Another Workflow').first().json;\n\nconst data = {\n  file_id: $input.first().json.id,\n  file_url: $input.first().json.url_private,\n  file_permalink: $input.first().json.permalink,\n  results: input.results,\n  source: input.source,\n  video: input.video,\n  post: input.post,\n};\n\n// Prepare payload for Approve / Reject / Edit buttons\nconst approvePayload = { action: 'approve', ...data };\nconst rejectPayload = { action: 'reject', ...data };\nconst editPayload = { action: 'edit', ...data };\n\n// Build the Slack Block UI\nconst blocks = [\n  {\n    type: \"actions\",\n    elements: [\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Approve\" },\n        style: \"primary\",\n        value: JSON.stringify(approvePayload)\n      },\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Reject\" },\n        style: \"danger\",\n        value: JSON.stringify(rejectPayload)\n      },\n      {\n        type: \"button\",\n        text: { type: \"plain_text\", text: \"Edit\" },\n        value: JSON.stringify(editPayload)\n      }\n    ]\n  }\n];\n\nreturn [{ \"json\": { blocks } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -240,7 +244,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "c8e5d62c-64c1-4d79-b27b-2d4bbb3f5c84",
+  "versionId": "350800f6-3f4a-4e72-9a1b-389f2e12761e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"

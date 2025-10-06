@@ -1,30 +1,6 @@
 {
-  "name": "Insert Rejected Video Source",
+  "name": "Insert Processed Source",
   "nodes": [
-    {
-      "parameters": {
-        "operation": "insert",
-        "collection": "rejected_sources",
-        "fields": "source_id,video_id,video_published_date,video_rejected_date",
-        "options": {
-          "dateFields": "video_published_date,video_rejected_date"
-        }
-      },
-      "type": "n8n-nodes-base.mongoDb",
-      "typeVersion": 1.2,
-      "position": [
-        176,
-        0
-      ],
-      "id": "a212a1b8-cb6b-4369-bf60-a4abe495252d",
-      "name": "Insert in rejected sources",
-      "credentials": {
-        "mongoDb": {
-          "id": "atuQlsTpZSEKAHMP",
-          "name": "MongoDB account"
-        }
-      }
-    },
     {
       "parameters": {
         "workflowInputs": {
@@ -36,15 +12,21 @@
               "name": "video_id"
             },
             {
-              "name": "video_published_date"
+              "name": "post_url"
             },
             {
-              "name": "video_rejected_date"
+              "name": "publish_date"
+            },
+            {
+              "name": "processing_date"
+            },
+            {
+              "name": "status"
             }
           ]
         }
       },
-      "id": "d774d6fb-b170-4b57-8cd4-9abf2a222111",
+      "id": "f3762ab5-b018-4aaf-9e61-4d4c0cd7fc04",
       "typeVersion": 1.1,
       "name": "When Executed by Another Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
@@ -52,6 +34,30 @@
         -48,
         0
       ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "processed_sources",
+        "fields": "source_id,video_id,post_url,publish_date,processing_date,status",
+        "options": {
+          "dateFields": "publish_date,processing_date"
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "45d90685-c193-4f43-8408-53adc1b5503b",
+      "name": "Insert processed source",
+      "credentials": {
+        "mongoDb": {
+          "id": "atuQlsTpZSEKAHMP",
+          "name": "MongoDB account"
+        }
+      }
     }
   ],
   "pinData": {
@@ -74,7 +80,7 @@
       "main": [
         [
           {
-            "node": "Insert in rejected sources",
+            "node": "Insert processed source",
             "type": "main",
             "index": 0
           }
@@ -86,10 +92,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "1ff28a3e-f28a-451a-b757-28ba87b68c12",
+  "versionId": "809f031b-5bc7-49a3-8601-1864cf2cb10a",
   "meta": {
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
   },
-  "id": "mqiTJQv6hDPLS6ny",
+  "id": "l3Ot7Z5JeVUM2j1R",
   "tags": []
 }
