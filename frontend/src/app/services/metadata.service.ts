@@ -34,6 +34,14 @@ export class MetadataService {
         url: 'https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ',
         order: 2,
       },
+      {
+        source_id: 'almolakhasalektesady_news',
+        name_ar: 'موقع الملخص الاقتصادي',
+        name_en: 'Almolakhas Alektesady News',
+        type: 'news',
+        url: 'https://almolakhasalektesady.com',
+        order: 3,
+      },
     ];
 
     // Initialize categories
