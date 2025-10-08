@@ -4,8 +4,7 @@
     {
       "parameters": {
         "collection": "sources",
-        "options": {},
-        "query": "{}\n"
+        "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.2,
@@ -246,7 +245,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "c57f226c-8a1c-413b-86f4-f2f587d3ccb2",
+  "versionId": "d0beb7b3-c3ce-4bdd-9ac0-47ff0c9698ef",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"

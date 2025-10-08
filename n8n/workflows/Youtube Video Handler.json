@@ -131,8 +131,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        672,
-        -144
+        976,
+        -160
       ],
       "id": "e3c4fc2b-7563-4348-a9b7-81fa9e7ed43b"
     },
@@ -243,7 +243,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "text": "={{ $json.transcript }}"
+            "text": "={{ $json.text }}"
           },
           "matchingColumns": [
             "text"
@@ -270,15 +270,15 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1312,
-        -224
+        1872,
+        -240
       ],
       "id": "17b1353c-203e-4cd8-ac14-6601f15f4fbe",
       "name": "Extract Prices"
     },
     {
       "parameters": {
-        "jsCode": "const url = $input.first().json.video.link\nlet videoId = null;\n\nif (url.includes(\"watch?v=\")) {\n  // Normal YouTube video\n  videoId = url.split(\"v=\")[1].split(\"&\")[0];\n} else if (url.includes(\"shorts/\")) {\n  // YouTube Shorts\n  videoId = url.split(\"shorts/\")[1].split(\"?\")[0];\n}\n\nvar json = $input.first().json;\njson.video.videoId = videoId;\nreturn json;\n"
+        "jsCode": "const url = $input.first().json.video.link\nlet videoId = null;\nlet isShort = false\n\nif (url.includes(\"watch?v=\")) {\n  // Normal YouTube video\n  videoId = url.split(\"v=\")[1].split(\"&\")[0];\n} else if (url.includes(\"shorts/\")) {\n  // YouTube Shorts\n  videoId = url.split(\"shorts/\")[1].split(\"?\")[0];\n  isShort = true;\n}\n\nvar json = $input.first().json;\njson.video.videoId = videoId;\njson.video.isShort = isShort;\nreturn json;\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -296,8 +296,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2160,
-        -240
+        2720,
+        -256
       ],
       "id": "bd6f94e2-05d9-49a3-998f-2a1a17f6abdf",
       "name": "Wait",
@@ -378,8 +378,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1936,
-        -240
+        2496,
+        -256
       ],
       "id": "12268253-a536-4395-ba64-eb63bf569191",
       "name": "Send results to slack"
@@ -387,13 +387,13 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const text = $('Get Transcript').item.json.stdout;\nconst results = $json.data;\nconst videoData = $(\"Set Video Data\").item.json;\n\nreturn {\n  \"results\": results,\n  \"source\": videoData.source,\n  \"video\": videoData.video,\n  \"post\": null,\n  \"text\": text,\n};"
+        "jsCode": "const text = $(\"Set text data\").item.json.text;\nconst results = $json.data;\nconst videoData = $(\"Set Video Data\").item.json;\n\nreturn {\n  \"results\": results,\n  \"source\": videoData.source,\n  \"video\": videoData.video,\n  \"post\": null,\n  \"text\": text,\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1760,
-        -240
+        2320,
+        -256
       ],
       "id": "c5418efa-5dff-4763-8399-c2865279ed17",
       "name": "Set slack data"
@@ -426,8 +426,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1520,
-        -224
+        2080,
+        -240
       ],
       "id": "681fe9ac-ba07-435c-8b08-64872d7849f9",
       "name": "If"
@@ -439,8 +439,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        864,
-        -144
+        1168,
+        -160
       ],
       "id": "e664dba5-ee4b-4d5d-a40f-e4697f1d8830",
       "name": "Code"
@@ -473,8 +473,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1040,
-        -144
+        1344,
+        -160
       ],
       "id": "255cab34-1b81-40d8-b2be-c4347b039d35",
       "name": "If1"
@@ -483,12 +483,12 @@
       "parameters": {
         "collection": "processed_sources",
         "options": {},
-        "query": "={\n  \"source_id\": \"{{ $json.source.source_id }}\",\n  \"post_url\": \"{{ $json.post.url }}\"\n}"
+        "query": "={\n  \"source_id\": \"{{ $json.source.source_id }}\",\n  \"video_id\": \"{{ $json.video.videoId }}\"\n}"
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.2,
       "position": [
-        -736,
+        -768,
         48
       ],
       "id": "ce895418-cc5b-4d35-99b3-ca248d95274f",
@@ -513,7 +513,7 @@
           "conditions": [
             {
               "id": "8278becc-21a3-4bef-a9ae-a7f9111e4385",
-              "leftValue": "={{ $json.source._id }}",
+              "leftValue": "={{ $json._id }}",
               "rightValue": 0,
               "operator": {
                 "type": "object",
@@ -534,6 +534,147 @@
       ],
       "id": "5f070987-58e7-4704-a74d-deb5101956ec",
       "name": "Check source is valid1"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        112
+      ],
+      "id": "444742c1-a81b-42f6-88db-f94c0fe0306c",
+      "name": "Wait1",
+      "webhookId": "837768d8-7a6a-422b-8c05-0f8b3e8c6c87"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "50b57d86-cad3-4c4f-8524-79a7ef9fac61",
+              "leftValue": "={{ $json.video.isShort }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7c3a5aa7-24dc-4e52-9b47-48a70ccee137",
+              "leftValue": "={{ $json.source.source_id }}",
+              "rightValue": "reda_meshref_youtube",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        -272
+      ],
+      "id": "adc9b4ca-19c6-480e-a832-779098c41132",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.ocr.space/parse/imageurl",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "=https://img.youtube.com/vi/{{ $json.video.videoId }}/maxresdefault.jpg"
+            },
+            {
+              "name": "language",
+              "value": "ara"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        -416
+      ],
+      "id": "23f21cc4-3131-4595-b3b1-4add04188c9a",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "uQvFcF88zrjAbEWH",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6d035891-fdc5-4c6d-982b-79828923811c",
+              "leftValue": "={{ $json.ParsedResults[0].ParsedText }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        -416
+      ],
+      "id": "53e58d52-9fc0-40f5-a822-a5b8c7db700c",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const json = $input.item.json;\nconst text = json.transcript || json.ParsedResults[0].ParsedText;\n\nreturn {\n  \"text\": text\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -240
+      ],
+      "id": "9e328c9a-73b2-4e73-949e-a96152fa3bb2",
+      "name": "Set text data"
     }
   ],
   "pinData": {
@@ -590,6 +731,30 @@
           }
         }
       }
+    ],
+    "HTTP Request1": [
+      {
+        "json": {
+          "ParsedResults": [
+            {
+              "TextOverlay": {
+                "Lines": [],
+                "HasOverlay": false,
+                "Message": "Text overlay is not provided as it is not requested"
+              },
+              "TextOrientation": "0",
+              "FileParseExitCode": 1,
+              "ParsedText": "ل \r\nاسعار الارز والمخلفات داخل كفر الشيخ \r\nالأسعار حسب التصفيه ونسبة الكسر تصفيه \r\nعريض 0&700/680 وفي الرفيع 670/650 \r\nونسبة الكسر لاتتخطي ال 25% عريض ورفيع \r\nاسعار الأرز الشعير \r\nشعير عريض 16000/15800 وصال المضارب \r\nشعير رفيع 13700/13500 وصال المضارب \r\nاسعار الارز الأبيض \r\nابيض عريض 25000/24800 ارض المضرب \r\nابيض رفيع 21200/21000 ارض المضرب \r\nاسعار المخلفات \r\nسرس مطحون 1700/1500 ارض المضرب \r\nالكون 13400/13200 ارض المضرب \r\nالناعم 13700/13500 \r\nالمضرب \r\n",
+              "ErrorMessage": "",
+              "ErrorDetails": ""
+            }
+          ],
+          "OCRExitCode": 1,
+          "IsErroredOnProcessing": false,
+          "ProcessingTimeInMilliseconds": "359",
+          "SearchablePDFURL": "Searchable PDF not generated as it was not requested."
+        }
+      }
     ]
   },
   "connections": {
@@ -631,7 +796,7 @@
       "main": [
         [
           {
-            "node": "Get Transcript",
+            "node": "If2",
             "type": "main",
             "index": 0
           }
@@ -760,14 +925,14 @@
       "main": [
         [
           {
-            "node": "Extract Prices",
+            "node": "Set text data",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Set rejected source data",
+            "node": "Wait1",
             "type": "main",
             "index": 0
           }
@@ -795,13 +960,82 @@
           }
         ]
       ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Set text data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set rejected source data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set text data": {
+      "main": [
+        [
+          {
+            "node": "Extract Prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "6837cb5c-4f09-4b07-9ac8-99a0aace72be",
+  "versionId": "05845a03-a5ad-41d2-b781-9c2e653af96c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"

@@ -283,7 +283,7 @@
           "conditions": [
             {
               "id": "8278becc-21a3-4bef-a9ae-a7f9111e4385",
-              "leftValue": "={{ $json.source._id }}",
+              "leftValue": "={{ $json._id }}",
               "rightValue": 0,
               "operator": {
                 "type": "object",
@@ -504,7 +504,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const json = $('When Executed by Another Workflow').first().json;\nreturn [\n  {\n    source_id: json.source.source_id,\n    post_url: json.post.url,\n    publish_date: json.video.pubDate,\n    processing_date: new Date().toISOString(),\n    status: 'rejected'\n  },\n];\n"
+        "jsCode": "const json = $('When Executed by Another Workflow').first().json;\nreturn [\n  {\n    source_id: json.source.source_id,\n    post_url: json.post.url,\n    publish_date: json.post.publish_date,\n    processing_date: new Date().toISOString(),\n    status: 'rejected'\n  },\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -534,7 +534,7 @@
             }
           },
           "post": {
-            "url": "https://almolakhasalektesady.com/%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D8%A7%D9%84%D8%A3%D8%B1%D8%B2-%D8%A7%D9%84%D8%B4%D8%B9%D9%8A%D8%B1-%D8%A7%D9%84%D9%8A%D9%88%D9%85-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%B9%D8%A7%D8%A1-24-%D8%B3%D8%A8%D8%AA/",
+            "url": "https://almolakhasalektesady.com/%D9%84%D9%84%D9%8A%D9%88%D9%85-%D8%A7%D9%84%D8%B1%D8%A7%D8%A8%D8%B9-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D8%AA%D9%88%D8%A7%D9%84%D9%8A-%D8%A7%D8%B1%D8%AA%D9%81%D8%A7%D8%B9-%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1/",
             "title": "أسعار الأرز الشعير اليوم الأربعاء 24 سبتمبر 2025",
             "publish_date": "2025-09-24"
           }
@@ -716,7 +716,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "316818f2-d1ef-479f-8ab9-9b4162e560d5",
+  "versionId": "625f45c3-7e45-467c-8264-cb68b1128e18",
   "meta": {
     "instanceId": "e0610107ac554f59b63883651795eb0400bfcc59bc18a9994fa27c06a3158c7b"
   },
