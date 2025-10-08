@@ -19,12 +19,20 @@ export class MetadataService {
     // Initialize sources
     const sourceData: Source[] = [
       {
+        source_id: 'summary',
+        name_ar: 'الملخص',
+        name_en: 'Summary',
+        type: 'summary',
+        url: '',
+        order: 1,
+      },
+      {
         source_id: 'reda_meshref_youtube',
         name_ar: 'قناة رضا مشرف',
         name_en: 'Reda Meshref Channel',
         type: 'youtube',
         url: 'https://www.youtube.com/channel/UCZHHlx_dBZIl-R7ZE2WxFWw',
-        order: 1,
+        order: 2,
       },
       {
         source_id: 'modern_agriculture_youtube',
@@ -32,7 +40,7 @@ export class MetadataService {
         name_en: 'Modern Agriculture Channel',
         type: 'youtube',
         url: 'https://www.youtube.com/channel/UCUahHBzRfv4N5fvTy2UJ9qQ',
-        order: 2,
+        order: 3,
       },
       {
         source_id: 'almolakhasalektesady_news',
@@ -40,7 +48,7 @@ export class MetadataService {
         name_en: 'Almolakhas Alektesady News',
         type: 'news',
         url: 'https://almolakhasalektesady.com',
-        order: 3,
+        order: 4,
       },
     ];
 

@@ -31,8 +31,9 @@ export class CropPricesChartsComponent implements OnChanges {
   @Input() data: CropDetails[] = [];
 
   organizedData: CategoryData[] = [];
+  organizedSummaryData?: CategoryData;
 
-  constructor(private metadataService: MetadataService) {}
+  constructor(private metadataService: MetadataService) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['data'] && this.data.length > 0) {
@@ -63,9 +64,8 @@ export class CropPricesChartsComponent implements OnChanges {
     });
 
     // Convert to the organized structure
-    this.organizedData = Array.from(categoryMap.entries()).map(([categoryId, sources]) => ({
-      categoryId,
-      sources: Array.from(sources.entries())
+    this.organizedData = Array.from(categoryMap.entries()).map(([categoryId, sources]) => {
+      const sourcesArray = Array.from(sources.entries())
         .sort(([a], [b]) => this.sortSources(a, b))
         .map(([sourceId, types]) => ({
           sourceId,
@@ -75,8 +75,71 @@ export class CropPricesChartsComponent implements OnChanges {
               typeId,
               data: data.sort((a, b) => a.publish_date.getTime() - b.publish_date.getTime()),
             })),
+        }));
+
+      // Add summary source at the beginning or end
+      const summarySource = this.createSummarySource(sources);
+      sourcesArray.unshift(summarySource); // Add at the beginning
+
+      return {
+        categoryId,
+        sources: sourcesArray,
+      };
+    });
+  }
+
+  private createSummarySource(sources: Map<string, Map<string, CropDetails[]>>): SourceData {
+    const summaryTypesMap = new Map<string, Map<string, CropDetails[]>>();
+
+    // Group all data by type and date
+    sources.forEach((types) => {
+      types.forEach((data, typeId) => {
+        if (!summaryTypesMap.has(typeId)) {
+          summaryTypesMap.set(typeId, new Map());
+        }
+
+        const typeDataByDate = summaryTypesMap.get(typeId)!;
+
+        data.forEach((item) => {
+          const dateKey = item.publish_date.toISOString().split('T')[0]; // Use date as key
+
+          if (!typeDataByDate.has(dateKey)) {
+            typeDataByDate.set(dateKey, []);
+          }
+
+          typeDataByDate.get(dateKey)!.push(item);
+        });
+      });
+    });
+
+    // Calculate averages for each type and date
+    return {
+      sourceId: 'summary',
+      types: Array.from(summaryTypesMap.entries())
+        .sort(([a], [b]) => this.sortCropTypes(a, b))
+        .map(([typeId, dataByDate]) => ({
+          typeId,
+          data: Array.from(dataByDate.entries())
+            .map(([dateKey, items]) => {
+              const minPrice = Math.min(...items.map(item => item.min_price));
+              const maxPrice = Math.max(...items.map(item => item.max_price));
+
+              // Use the first item's dates and IDs as template
+              const firstItem = items[0];
+
+              return new CropDetails(
+                'summary', // source_id
+                firstItem.crop_category_id,
+                typeId,
+                firstItem.publish_date,
+                firstItem.processing_date,
+                minPrice,
+                maxPrice
+              );
+            })
+            .sort((a, b) => a.publish_date.getTime() - b.publish_date.getTime()),
         })),
-    }));
+    };
   }
 
   get hasData(): boolean {

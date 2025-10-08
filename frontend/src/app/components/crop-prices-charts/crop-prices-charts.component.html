@@ -1,11 +1,6 @@
 <div class="charts-container">
-    <div class="charts-header" *ngIf="hasData">
-        <h2>Crop Price Charts</h2>
-        <p class="charts-summary">{{ totalCharts }} charts across {{ organizedData.length }} categories</p>
-    </div>
-
-    <!-- Category Expansion Panels -->
-    <div class="category-expansion" *ngIf="hasData">
+    <!-- Charts Container -->
+    <div *ngIf="hasData" class="charts-content">
         <mat-expansion-panel *ngFor="let category of organizedData" class="category-panel" [expanded]="true">
             <mat-expansion-panel-header class="category-header">
                 <mat-panel-title class="category-title">
@@ -17,7 +12,6 @@
                 </mat-panel-description>
             </mat-expansion-panel-header>
 
-            <!-- Source Expansion Panels -->
             <div class="source-expansion">
                 <mat-expansion-panel *ngFor="let source of category.sources" class="source-panel" [expanded]="true">
                     <mat-expansion-panel-header class="source-header">
@@ -30,11 +24,9 @@
                         </mat-panel-description>
                     </mat-expansion-panel-header>
 
-                    <!-- Type Charts Grid -->
+                    <!-- Responsive Grid Layout -->
                     <div class="type-charts-grid">
-                        <app-crop-details-chart
-                            *ngFor="let type of source.types"
-                            [cropData]="type.data"
+                        <app-crop-details-chart *ngFor="let type of source.types" [cropData]="type.data"
                             [cropTypeId]="getCropTypeDisplayName(type.typeId)"
                             [cropCategoryId]="getCategoryDisplayName(category.categoryId)"
                             [sourceId]="getSourceDisplayName(source.sourceId)">
@@ -45,6 +37,7 @@
         </mat-expansion-panel>
     </div>
 
+    <!-- No Data State -->
     <div class="no-data" *ngIf="!hasData">
         <div class="no-data-content">
             <h3>No Data Available</h3>
